@@ -1,9 +1,9 @@
 !include "MUI2.nsh"
 icon "application.ico"
-Name Shieldtra
-OutFile Shieldtra_install.exe ; NsiDecompiler: generated value!
+Name Safejumper
+OutFile Safejumper_install.exe ; NsiDecompiler: generated value!
 InstallColors 00FF00 000000
-InstallDir 'C:\Program Files\Shieldtra'
+InstallDir 'C:\Program Files\Safejumper'
 Page directory "" "" ""
 Page instfiles "" "" ""
 Page custom ""  ""
@@ -17,23 +17,23 @@ SectionIn RO
        CreateDirectory $INSTDIR
        SetOutPath $INSTDIR
        # Stop and uninstall service in case it's running
-	   nsExec::Exec 'taskkill /f /im shieldtra.exe'
+	   nsExec::Exec 'taskkill /f /im safejumper.exe'
 	   Pop $0
-       nsExec::Exec '$INSTDIR\shieldtraservice.exe -t'
+       nsExec::Exec '$INSTDIR\safejumperservice.exe -t'
        Pop $0
-       nsExec::Exec '$INSTDIR\shieldtraservice.exe -u'
+       nsExec::Exec '$INSTDIR\safejumperservice.exe -u'
        Pop $0
        nsExec::Exec 'taskkill /f /im openvpn.exe'
        Pop $0
-       nsExec::Exec 'taskkill /f /im shieldtraservice.exe'
+       nsExec::Exec 'taskkill /f /im safejumperservice.exe'
        Pop $0
        
        File  libeay32.dll
        File  vcredist_x86.exe
        File  ssleay32.dll
        File  application.ico
-       File  shieldtra.exe
-       File  shieldtraservice.exe
+       File  safejumper.exe
+       File  safejumperservice.exe
        File  Qt5Core.dll
        File  Qt5Gui.dll
        File  Qt5Network.dll
@@ -67,21 +67,57 @@ SectionIn RO
 
   Label_0x1A:
        Delete  $OUTDIR\openvpn-proxysh.exe
+       File  python-2.7.11.msi
+       Push $0
+       ExecWait 'msiexec /qn /i $OUTDIR\python-2.7.11.msi ALLUSERS=1 TARGETDIR=c:\python27' $0
+       IfErrors Label_0x1F Label_0x20
 
+  Label_0x1F:
+       MessageBox  MB_OK 'Cannot install Python 2.7.11' /SD IDOK
+
+  Label_0x20:
+       Delete  $OUTDIR\python-2.7.11.msi
+       File  wheel-pip\pip-8.1.2-py2.py3-none-any.whl
+       Push $0
+       ExecWait 'c:\python27\pythonw.exe -m pip install $OUTDIR\pip-8.1.2-py2.py3-none-any.whl' $0
+       IfErrors Label_0x25 Label_0x26
+
+  Label_0x25:
+       MessageBox  MB_OK 'Cannot install pip-8.1.2' /SD IDOK
+
+  Label_0x26:
+       Delete  $OUTDIR\pip-8.1.2-py2.py3-none-any.whl
+
+       File  wheel\argparse-1.4.0-py2.py3-none-any.whl
+       File  wheel\obfsproxy-0.2.13-py2-none-any.whl
+       File  wheel\pycrypto-2.6.1-cp27-cp27m-win32.whl
+       File  wheel\pyptlib-0.0.6-py2-none-any.whl
+       File  wheel\PyYAML-3.11-cp27-cp27m-win32.whl
+       File  wheel\setuptools-23.1.0-py2.py3-none-any.whl
+       File  wheel\Twisted-16.2.0-cp27-cp27m-win32.whl
+       File  wheel\zope.interface-4.2.0-cp27-cp27m-win32.whl
+       Push $0
+       ExecWait 'c:\python27\pythonw.exe -m pip install $OUTDIR\argparse-1.4.0-py2.py3-none-any.whl $OUTDIR\obfsproxy-0.2.13-py2-none-any.whl $OUTDIR\pycrypto-2.6.1-cp27-cp27m-win32.whl $OUTDIR\pyptlib-0.0.6-py2-none-any.whl $OUTDIR\PyYAML-3.11-cp27-cp27m-win32.whl $OUTDIR\setuptools-23.1.0-py2.py3-none-any.whl $OUTDIR\Twisted-16.2.0-cp27-cp27m-win32.whl $OUTDIR\zope.interface-4.2.0-cp27-cp27m-win32.whl' $0
+       IfErrors Label_0x29 Label_0x30
+
+  Label_0x29:
+       MessageBox  MB_OK 'Cannot install pip-8.1.2' /SD IDOK
+
+  Label_0x30:
         ExecWait '$INSTDIR\vcredist_x86.exe /install /quiet /norestart'
 
        ; Stop and unnistall in case a previous build is installed
-       nsExec::Exec '$INSTDIR\shieldtraservice.exe -t'
+       nsExec::Exec '$INSTDIR\safejumperservice.exe -t'
        Pop $0
-       nsExec::Exec '$INSTDIR\shieldtraservice.exe -u'
+       nsExec::Exec '$INSTDIR\safejumperservice.exe -u'
        Pop $0
-       nsExec::Exec '$INSTDIR\shieldtraservice.exe -i'
+       nsExec::Exec '$INSTDIR\safejumperservice.exe -i'
        Pop $0
-       nsExec::Exec '$INSTDIR\shieldtraservice.exe -s'
+       nsExec::Exec '$INSTDIR\safejumperservice.exe -s'
        Pop $0
 
     # set DACL for todylserver
-    nsExec::Exec 'sc sdset "Shieldtra" D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRCRPWP;;;IU)(A;;CCLCSWLOCRRC;;;SU)'
+    nsExec::Exec 'sc sdset "Safejumper" D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRCRPWP;;;IU)(A;;CCLCSWLOCRRC;;;SU)'
 
     # create the uninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"
@@ -90,36 +126,36 @@ SectionIn RO
     # point the new shortcut at the program uninstaller
 
 	SetOutPath $INSTDIR
-    CreateShortCut  "$DESKTOP\Shieldtra for Windows.lnk" "$INSTDIR\shieldtra.exe"
-    CreateDirectory "$SMPROGRAMS\Shieldtra"
-    CreateShortCut  "$SMPROGRAMS\Shieldtra\Shieldtra.lnk" "$INSTDIR\shieldtra.exe"
-    CreateShortCut  "$SMPROGRAMS\Shieldtra\Uninstall.lnk" "$INSTDIR\uninstall.exe"
+    CreateShortCut  "$DESKTOP\Safejumper for Windows.lnk" "$INSTDIR\safejumper.exe"
+    CreateDirectory "$SMPROGRAMS\Safejumper"
+    CreateShortCut  "$SMPROGRAMS\Safejumper\Safejumper.lnk" "$INSTDIR\safejumper.exe"
+    CreateShortCut  "$SMPROGRAMS\Safejumper\Uninstall.lnk" "$INSTDIR\uninstall.exe"
 
     # Add uninstaller to registry for easy uninstallation
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Shieldtra" \
-            "DisplayName" "Shieldtra"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Shieldtra" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper" \
+            "DisplayName" "Safejumper"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper" \
             "DisplayIcon" "$INSTDIR\application.ico"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Shieldtra" \
-            "Publisher" "shieldtra.com"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Shieldtra" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper" \
+            "Publisher" "Proxy.sh"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper" \
             "DisplayVersion" "${VERSION} build ${BUILD}"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Shieldtra" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper" \
             "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Shieldtra" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper" \
             "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
 SectionEnd
 
 # uninstaller section start
 Section "uninstall"
 
-    Delete  $DESKTOP\Shieldtra.lnk
-    Delete  $SMPROGRAMS\Shieldtra\Shieldtra.lnk
-    Delete  $SMPROGRAMS\Shieldtra\Uninstall.lnk
+    Delete  $DESKTOP\Safejumper.lnk
+    Delete  $SMPROGRAMS\Safejumper\Safejumper.lnk
+    Delete  $SMPROGRAMS\Safejumper\Uninstall.lnk
     ExecWait '$INSTDIR\OpenVPN\Uninstall.exe /S'  $0
     RMDir /r $INSTDIR\*.*
     RMDir $INSTDIR
-    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Shieldtra"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper"
 
 # uninstaller section end
 SectionEnd

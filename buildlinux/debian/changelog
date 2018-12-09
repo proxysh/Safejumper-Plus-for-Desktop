@@ -1,6 +1,6 @@
-shieldtra (2018.11.06.0) unstable; urgency=medium
+safejumper (2018.12.11.0) unstable; urgency=medium
 
-  * Updated packaging to qml gui for version 1.0 build 1
+  * Updated packaging to qml gui for version 5.0 build 100
 
- -- Jeremy Whiting <info@3monkeysinternational.com>  Tue, 06 Nov 2018 21:41:00 -0600
+ -- Jeremy Whiting <info@3monkeysinternational.com>  Tue, 11 Dec 2018 21:41:00 -0600
 

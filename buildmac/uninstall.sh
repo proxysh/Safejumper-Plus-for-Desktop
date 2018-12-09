@@ -1,30 +1,30 @@
 #!/bin/sh
 
-echo "Shieldtra Removal Tool"
+echo "Safejumper Removal Tool"
 
 username=`echo $USER`
 
-echo "Stopping any running Shieldtra applications"
+echo "Stopping any running Safejumper applications"
 
-killall Shieldtra
+killall Safejumper
 
 found=0
-if [ -d "/Applications/Shieldtra.app" ]; then
+if [ -d "/Applications/Safejumper.app" ]; then
     found=1;
 fi
 
-echo "Stopping Shieldtra helper service"
+echo "Stopping Safejumper helper service"
 # stop helper 
-launchctl unload /Library/LaunchDaemons/com.shieldtra.ShieldtraHelper.plist
-rm -rf /Library/LaunchDaemons/com.shieldtra.ShieldtraHelper.plist
+launchctl unload /Library/LaunchDaemons/sh.proxy.SafejumperHelper.plist
+rm -rf /Library/LaunchDaemons/sh.proxy.SafejumperHelper.plist
 
-killall com.shieldtra.ShieldtraHelper
-rm -rf /Library/PrivilegedHelperTools/com.shieldtra.ShieldtraHelper
+killall sh.proxy.SafejumperHelper
+rm -rf /Library/PrivilegedHelperTools/sh.proxy.SafejumperHelper
 
-echo "Deleting previous installation of Shieldtra application"
+echo "Deleting previous installation of Safejumper application"
 
-rm -rf /Applications/Shieldtra.app
+rm -rf /Applications/Safejumper.app
 
 if [ "$found" = "1" ]; then
-    echo "Successfully removed Shieldtra"
+    echo "Successfully removed Safejumper"
 fi

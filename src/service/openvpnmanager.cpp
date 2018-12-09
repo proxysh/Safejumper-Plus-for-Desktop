@@ -163,31 +163,31 @@ void OpenvpnManager::startConnecting()
 
 void OpenvpnManager::launchObfsproxy()
 {
-//    bool obfs = (mEncryption == ENCRYPTION_TOR_OBFS2
-//                 || mEncryption == ENCRYPTION_TOR_OBFS3
-//                 || mEncryption == ENCRYPTION_TOR_SCRAMBLESUIT
-//                );
-//    if (mHostname.isEmpty() || mPort.isEmpty()) {
-//        QString message = "Server or port is empty, select a location";
-//        Log::serviceLog(message);
-//        emit sendError(message);
-//        return;
-//    }
-//    if (obfs) {
-//        QString obfstype;
-//        if (mEncryption == ENCRYPTION_TOR_OBFS2)
-//            obfstype = "obfs2";
-//        else if (mEncryption == ENCRYPTION_TOR_OBFS3)
-//            obfstype = "obfs3";
-//        else
-//            obfstype = "scramblesuit";
-//        runObfsproxy(mHostname, mPort, obfstype, "1050");
-//        if (!obfsproxyRunning()) {
-//            Log::serviceLog("Cannot run Obfsproxy");
-//            emit sendError("Cannot run Obfsproxy");
-//            return;
-//        }
-//    }
+    bool obfs = (mEncryption == ENCRYPTION_TOR_OBFS2
+                 || mEncryption == ENCRYPTION_TOR_OBFS3
+                 || mEncryption == ENCRYPTION_TOR_SCRAMBLESUIT
+                );
+    if (mHostname.isEmpty() || mPort.isEmpty()) {
+        QString message = "Server or port is empty, select a location";
+        Log::serviceLog(message);
+        emit sendError(message);
+        return;
+    }
+    if (obfs) {
+        QString obfstype;
+        if (mEncryption == ENCRYPTION_TOR_OBFS2)
+            obfstype = "obfs2";
+        else if (mEncryption == ENCRYPTION_TOR_OBFS3)
+            obfstype = "obfs3";
+        else
+            obfstype = "scramblesuit";
+        runObfsproxy(mHostname, mPort, obfstype, "1050");
+        if (!obfsproxyRunning()) {
+            Log::serviceLog("Cannot run Obfsproxy");
+            emit sendError("Cannot run Obfsproxy");
+            return;
+        }
+    }
 }
 
 void OpenvpnManager::processError(QProcess::ProcessError error)
@@ -203,11 +203,10 @@ void OpenvpnManager::processStarted()
 
 bool OpenvpnManager::writeConfigFile()
 {
-    bool obfs = false;
-//    bool obfs = (mEncryption == ENCRYPTION_TOR_OBFS2
-//                 || mEncryption == ENCRYPTION_TOR_OBFS3
-//                 || mEncryption == ENCRYPTION_TOR_SCRAMBLESUIT
-//                );
+    bool obfs = (mEncryption == ENCRYPTION_TOR_OBFS2
+                 || mEncryption == ENCRYPTION_TOR_OBFS3
+                 || mEncryption == ENCRYPTION_TOR_SCRAMBLESUIT
+                );
     QFile ff(ServicePathHelper::Instance()->openvpnConfigFilename());
     if (!ff.open(QIODevice::WriteOnly)) {
         QString se = "Cannot write config file '" + ServicePathHelper::Instance()->openvpnConfigFilename() + "'";
@@ -217,36 +216,6 @@ bool OpenvpnManager::writeConfigFile()
     }
     ff.write(mOvpnContent);
 
-//    if (mEncryption == ENCRYPTION_ECC || mEncryption == ENCRYPTION_ECCXOR) {
-////          ff.write("tls-cipher ECDHE-ECDSA-AES256-GCM-SHA384\n");
-//        ff.write("tls-cipher TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384\n");
-
-//        //ff.write("tls-cipher ECDH\n");
-//        //ff.write("tls-cipher !ECDH\n");
-
-//        ff.write("ecdh-curve secp384r1\n");
-
-//        if (mEncryption == ENCRYPTION_ECCXOR)
-//            ff.write("scramble obfuscate 0054D65beN6r2kd\n");
-
-//        ff.write(
-//            "<ca>\n"
-//            "-----BEGIN CERTIFICATE-----\n"
-//            "MIIB3DCCAWKgAwIBAgIJAMyliDCXM4kcMAoGCCqGSM49BAMCMBMxETAPBgNVBAMT\n"
-//            "CHByb3h5LnNoMB4XDTE0MTExMzExNTk1NVoXDTI0MTExMDExNTk1NVowEzERMA8G\n"
-//            "A1UEAxMIcHJveHkuc2gwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAATwczmfgxUfobt/\n"
-//            "7S+A2P1tYNOYATTpxcIEAtUVCgywp1Fd6tKAttCqvpHz8PDOb4NYS6JONivO5yaT\n"
-//            "jfDiTrWRGZeYf2JsNs6byv/A9qxvDCcJ49EotonMJYX4+TQq75ejgYEwfzAdBgNV\n"
-//            "HQ4EFgQU6miAiqVUQAYeUP4LnZfKNdfQjUkwQwYDVR0jBDwwOoAU6miAiqVUQAYe\n"
-//            "UP4LnZfKNdfQjUmhF6QVMBMxETAPBgNVBAMTCHByb3h5LnNoggkAzKWIMJcziRww\n"
-//            "DAYDVR0TBAUwAwEB/zALBgNVHQ8EBAMCAQYwCgYIKoZIzj0EAwIDaAAwZQIwd5vR\n"
-//            "8fTrEdXLKZjiXeCjH/vxnnbelGcgpFz/r0cdr8YISa20w2zfGVB1+8XRhaYHAjEA\n"
-//            "yZeceiNW01Uj7DnjgWdLJWxcuduP1eTojzcQTGcFRPGd45w6pM1oGvLBhCD+QDzw\n"
-//            "-----END CERTIFICATE-----\n"
-//            "</ca>\n"
-//        );
-//    }
-
     if (!mDNS1.isEmpty()) {
         ff.write(QString("dhcp-option DNS %1\n").arg(mDNS1).toUtf8());
     }
@@ -254,13 +223,13 @@ bool OpenvpnManager::writeConfigFile()
         ff.write(QString("dhcp-option DNS %1\n").arg(mDNS2).toUtf8());
     }
 
-    if (obfs) {
-// TODO: -0 OS
-        ff.write("socks-proxy 127.0.0.1 1050\n");
-        ff.write("route ");
-        ff.write(mHostname.toLatin1());
-        ff.write(" 255.255.255.255 net_gateway\n");
-    }
+//    if (obfs) {
+//// TODO: -0 OS
+//        ff.write("socks-proxy 127.0.0.1 1050\n");
+//        ff.write("route ");
+//        ff.write(mHostname.toLatin1());
+//        ff.write(" 255.255.255.255 net_gateway\n");
+//    }
 
     ff.flush();
     ff.close();
@@ -1670,15 +1639,18 @@ void OpenvpnManager::getOvpn()
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
 
     QUrl url = QUrl::fromUserInput(kOvpnUrl);
-    QUrlQuery query;
-    query.addQueryItem("ip", mHostname);
-    query.addQueryItem("port", mPort);
-    query.addQueryItem("protocol", mTcpOrUdp);
-    url.setQuery(query);
-    QNetworkRequest request(url);
-    Log::serviceLog("Fetching config from url " + request.url().toString());
+    QUrlQuery postData;
+    postData.addQueryItem("location", QString("Specific:%1").arg(mHostname));
+    postData.addQueryItem("port", QString("%1:%2").arg(mPort).arg(mTcpOrUdp));
+    postData.addQueryItem("os", OS_STRING);
 
-    QNetworkReply *reply = nam->get(request);
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    Log::serviceLog("Fetching config from url " + request.url().toString());
+    Log::serviceLog("post data is " + postData.toString(QUrl::FullyEncoded));
+
+    QNetworkReply *reply = nam->post(request, postData.toString(QUrl::FullyEncoded).toUtf8());
     connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
             this, SLOT(getOvpnError(QNetworkReply::NetworkError)));
     connect(reply, &QNetworkReply::finished,

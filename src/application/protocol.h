@@ -16,57 +16,30 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef SERVERSMODEL_H
-#define SERVERSMODEL_H
+#ifndef PROTOCOL_H
+#define PROTOCOL_H
 
-#include <QAbstractListModel>
+#include <QString>
+#include <QVariantList>
 
-#include "common.h"
-
-#include "server.h"
-
-#include <QList>
-#include <QJsonArray>
-
-class ServersModel: public QAbstractListModel {
-    Q_OBJECT
+class Protocol
+{
 public:
-    enum Roles {
-        nameRole = Qt::UserRole + 1,
-        isoRole,
-        ipRole,
-        hostnameRole,
-        loadRole,
-        favoriteRole,
-        portsRole,
-        pingRole
-    };
+    Protocol();
+    virtual ~Protocol();
 
-    ServersModel(QObject *parent=nullptr);
-    virtual ~ServersModel();
+    void setPort(int port);
+    int port();
 
-    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    virtual QVariant data(const QModelIndex &index, int role) const;
-    virtual QHash<int, QByteArray> roleNames() const;
+    void setTcp(bool tcp);
+    bool tcp();
 
-    void updateServers(const QJsonArray &servers);
+    const QString displayName() const;
 
-    // Add given server data to existing server data
-    // Used to add hub data to server list model
-    void appendServers(const QJsonArray &servers);
-
-    Q_INVOKABLE AServer *server(int index);
-    int count();
-
-    void setPing(int index, int ping);
-
-    QList<int> serversForEncryption(int encryption);
-
-    // Which server indexes of the model are favorites
-    Q_INVOKABLE QList<int> favoriteServers();
-
+    bool operator==(const Protocol& other)const;
 private:
-    QList<AServer*> mServers;
+    bool mTcp; // True for tcp, false for udp
+    int mPort;
 };
 
-#endif
+#endif // PROTOCOL_H

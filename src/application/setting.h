@@ -74,6 +74,7 @@ class Setting: public QObject
     Q_PROPERTY(int favorite READ favorite WRITE setFavorite NOTIFY favoriteChanged)
 
     Q_PROPERTY(bool showFavorites READ showFavorites NOTIFY favoritesChanged)
+    Q_PROPERTY(bool showNodes READ showNodes WRITE setShowNodes NOTIFY showNodesChanged)
 
 public:
     ~Setting();

@@ -6,8 +6,8 @@
 
 QT	   += network xml core gui widgets qml quick svg
 
-TARGET = shieldtra
-APPNAME = Shieldtra
+TARGET = safejumper
+APPNAME = Safejumper
 TEMPLATE = app
 INCLUDEPATH += ../common
 
@@ -27,8 +27,8 @@ macx: {
 
     INFO_PLIST_PATH = $$shell_quote($$(PWD)/$${APPNAME}.app/Contents/Info.plist)
 
-    APP_IDENTIFIER = com.shieldtra.$${APPNAME}
-    HELPER_IDENTIFIER = com.shieldtra.$${APPNAME}Helper
+    APP_IDENTIFIER = sh.proxy.$${APPNAME}
+    HELPER_IDENTIFIER = sh.proxy.$${APPNAME}Helper
 
     plist.commands += $(COPY) $$PWD/Info.plist $${INFO_PLIST_PATH};
     # plist.commands += /usr/libexec/PlistBuddy -c \"Set :CFBundleIdentifier $${APP_IDENTIFIER}\" $${INFO_PLIST_PATH};
@@ -40,13 +40,15 @@ macx: {
 
     SOURCES += smjobbless.mm
     HEADERS += smjobbless.h
+
+    RESOURCES += qml.qrc
 }
 
 win32: {
     WINSDK_DIR = C:/Program Files/Microsoft SDKs/Windows/v7.1
     WIN_PWD = $$replace(PWD, /, \\)
     OUT_PWD_WIN = $$replace(OUT_PWD, /, \\)
-    QMAKE_POST_LINK = "$$quote($$OUT_PWD_WIN\\..\\fixbinary.bat) $$quote($$OUT_PWD_WIN\\..\\shieldtra.exe)"
+    QMAKE_POST_LINK = "$$quote($$OUT_PWD_WIN\\..\\fixbinary.bat) $$quote($$OUT_PWD_WIN\\..\\safejumper.exe)"
     RC_FILE = application.rc
     LIBS += -lws2_32 -lIphlpapi
     DESTDIR = ../../buildwindows/
@@ -60,6 +62,8 @@ win32: {
         qtlocalpeer.cpp \
         qtlockedfile.cpp \
         qtsingleapplication.cpp \
+
+    RESOURCES += qml.qrc
 }
 
 linux: {
@@ -72,6 +76,8 @@ linux: {
         qtlocalpeer.cpp \
         qtlockedfile.cpp \
         qtsingleapplication.cpp \
+
+    RESOURCES += linuxqml.qrc
 
     CONFIG += static
 }
@@ -90,6 +96,7 @@ SOURCES += \
     ../common/pathhelper.cpp \
     pingwaiter.cpp \
     portforwarder.cpp \
+    protocol.cpp \
     server.cpp \
     serversmodel.cpp \
     setting.cpp \
@@ -107,6 +114,7 @@ HEADERS += \
     ../common/pathhelper.h \
     pingwaiter.h \
     portforwarder.h \
+    protocol.h \
     server.h \
     serversmodel.h \
     setting.h \
@@ -117,7 +125,6 @@ HEADERS += \
 
 RESOURCES += \
     images.qrc \
-    qml.qrc \
     maps.qrc \
     fonts.qrc
 

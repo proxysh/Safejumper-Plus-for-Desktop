@@ -29,9 +29,9 @@ Rectangle {
     scale: 0.8
     transformOrigin: Item.TopLeft
 
-    property color defaultColor: "#FEBE10"
-    property string shopUrl: "https://www.mbaex.com"
-    property string updateUrl: "https://www.mbaex.com/software"
+    property color defaultColor: "#C53232"
+    property string shopUrl: "https://proxy.sh"
+    property string updateUrl: "https://proxy.sh/download"
 
     // Increase, and if it hits 3 go directly to login page
     property int onboardingTimes: 0
@@ -43,10 +43,16 @@ Rectangle {
 
     property var currentPopup
 
+    property var allserversmodel: settings.showNodes ? serversModel : hubsModel
+
     ListModel {
         id: encryptionModel
-        ListElement { name: "TLSCrypt" }
-        ListElement { name: "TLSCrypt+XOR" }
+        ListElement { name: "RSA" }
+        ListElement { name: "OBFS2" }
+        ListElement { name: "OBFS3" }
+        ListElement { name: "ScrambleSuit" }
+        ListElement { name: "ECC" }
+        ListElement { name: "ECC+XOR" }
     }
 
     function showPopup(component)
@@ -312,14 +318,17 @@ Rectangle {
         onSettingsClicked: { stack.push(settingsPage); }
         onSelectEncryption: {
             console.log("onSelectEncryption called in mainwindow");
-            encryptionPopup.selectedIndex = settings.serverEncryption(serversModel.server(index).address);
+            encryptionPopup.selectedIndex = settings.serverEncryption(allserversmodel.server(index).address);
+            encryptionPopup.itemVisible = allserversmodel.server(index).supportedEncryptions();
             showPopup(encryptionPopup);
         }
 
         onSelectPort: {
-            var serverAddress = serversModel.server(index).address;
+            var serverAddress = allserversmodel.server(index).address;
             var encryption = settings.serverEncryption(serverAddress)
             portPopup.selectedIndex = settings.serverProtocol(serverAddress, encryption);
+            portPopup.itemModel = settings.portsForEncryption(encryption);
+            portPopup.itemVisible = allserversmodel.server(index).supportedPorts(encryption);
             showPopup(portPopup);
         }
     }

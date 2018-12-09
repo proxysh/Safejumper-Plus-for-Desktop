@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2017 by Jeremy Whiting <jeremypwhiting@gmail.com>       *
+ *   Copyright (C) 2018 by Jeremy Whiting <jeremypwhiting@gmail.com>       *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -16,29 +16,45 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#ifndef FLAG_H
-#define FLAG_H
+#include "protocol.h"
 
-#include <QString>
-#include <QPoint>
-
-class flag
+Protocol::Protocol()
 {
-public:
-    static QString isoFromServerName(const QString & srv);
+}
 
-    // name from server into short name to display on map control
-    // e.g.
-    // U.S. Florida Hub => U.S.
-    static QString ShortName(const QString & name);
+Protocol::~Protocol()
+{
+}
 
-    // clear name from "Hub", "Boost", and trailing server number
-    // U.S. Florida Hub => U.S. Florida
-    // Japan 2 => Japan
-    static QString clearName(const QString & name);
-private:
-    static int IdFromName(const QString & srv);
-    static QString HandleTypo(const QString & name);                    // handle typo in server names: e.g. Brasil => Brazil
-};
+void Protocol::setPort(int port)
+{
+    mPort = port;
+}
 
-#endif // FLAG_H
+int Protocol::port()
+{
+    return mPort;
+}
+
+void Protocol::setTcp(bool tcp)
+{
+    mTcp = tcp;
+}
+
+bool Protocol::tcp()
+{
+    return mTcp;
+}
+
+const QString Protocol::displayName() const
+{
+    if (mTcp)
+        return QString("TCP %1").arg(mPort);
+    return QString("UDP %1").arg(mPort);
+}
+
+bool Protocol::operator==(const Protocol &other) const
+{
+    return mTcp == other.mTcp && mPort == other.mPort;
+}
+

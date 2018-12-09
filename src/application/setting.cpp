@@ -434,10 +434,10 @@ bool Setting::startup()
 static const QString gs_desktop =
     "[Desktop Entry]\n"
     "Type=Application\n"
-    "Name=Shieldtra\n"
-    "Exec=/opt/shieldtra/shieldtra\n"
-    "Icon=/usr/share/icons/hicolor/64x64/apps/shieldtra.png\n"
-    "Comment=OpenVPN client for shieldtra.com\n"
+    "Name=Safejumper\n"
+    "Exec=/opt/safejumper/safejumper\n"
+    "Icon=/usr/share/icons/hicolor/64x64/apps/safejumper.png\n"
+    "Comment=OpenVPN client for proxy.sh\n"
     "X-GNOME-Autostart-enabled=true\n";
 #endif
 
@@ -579,7 +579,7 @@ QString Setting::encryptionName()
     int currentEncryption = encryption();
     if (currentEncryption >= ENCRYPTION_COUNT ||
             currentEncryption >= encryptionNames.size())
-        currentEncryption = ENCRYPTION_TLSCRYPT;
+        currentEncryption = ENCRYPTION_RSA;
     return encryptionNames.at(currentEncryption);
 }
 

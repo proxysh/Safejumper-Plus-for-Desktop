@@ -1,14 +1,14 @@
 #!/bin/bash
-hdiutil detach /Volumes/shieldtra/
+hdiutil detach /Volumes/safejumper/
 
 sh scripts/package.sh 
-hdiutil mount shieldtra.dmg
-scripts/ddstoregen.sh shieldtra
-hdiutil detach /Volumes/shieldtra/
+hdiutil mount safejumper.dmg
+scripts/ddstoregen.sh safejumper
+hdiutil detach /Volumes/safejumper/
 
-mv shieldtra.dmg tmp.dmg
-hdiutil convert -format UDRO -o shieldtra.dmg tmp.dmg
+mv safejumper.dmg tmp.dmg
+hdiutil convert -format UDRO -o safejumper.dmg tmp.dmg
 rm tmp.dmg
-hdiutil convert shieldtra.dmg -format UDZO -imagekey -zlib-level=9 -o shieldtra-compressed.dmg
-rm shieldtra.dmg
-mv shieldtra-compressed.dmg shieldtra.dmg
+hdiutil convert safejumper.dmg -format UDZO -imagekey -zlib-level=9 -o safejumper-compressed.dmg
+rm safejumper.dmg
+mv safejumper-compressed.dmg safejumper.dmg

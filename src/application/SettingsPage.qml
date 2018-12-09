@@ -908,11 +908,12 @@ Item {
                 }
 
                 // TODO: Enable in proxy.sh branch only
-    //            ToggleSetting {
-    //                title: qsTr("Display all Servers / Just Hubs");
-    //                content: qsTr("You can choose to either see all available servers or only the main hubs only.");
-    //            }
-
+                ToggleSetting {
+                    title: qsTr("Display all Servers / Just Hubs");
+                    content: qsTr("You can choose to either see all available servers or only the main hubs only.");
+                    toggleChecked: settings.showNodes
+                    onToggled: { settings.showNodes = toggleChecked; }
+                }
 
                 // Now update check button/box
                 ShadowRect {

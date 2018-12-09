@@ -4,11 +4,11 @@ VERSION=$1
 
 scripts/pkg-dmg \
     --verbosity 2 \
-    --volname "shieldtra" \
-    --source application/Shieldtra.app \
+    --volname "safejumper" \
+    --source application/Safejumper.app \
     --sourcefile \
     --format UDRW \
-    --target shieldtra.dmg \
+    --target safejumper.dmg \
     --icon application.icns  \
     --mkdir .background \
     --symlink  /Applications:Applications \

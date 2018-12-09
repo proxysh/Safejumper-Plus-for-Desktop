@@ -205,10 +205,10 @@ void VPNServiceManager::sendCredentials()
     if (ensureConnected()) {
         QJsonObject jObj;
 
-        Log::logt("Sending command 'cmdSetCredentials', name is " + AuthManager::instance()->VPNName() + " password is " + AuthManager::instance()->VPNPassword());
+        Log::logt("Sending command 'cmdSetCredentials', name is " + AuthManager::instance()->accountName() + " password is " + AuthManager::instance()->accountPassword());
         jObj["cmd"] = cmdSetCredentials;
-        jObj["vpnusername"] = AuthManager::instance()->VPNName();
-        jObj["vpnpassword"] = AuthManager::instance()->VPNPassword();
+        jObj["vpnusername"] = AuthManager::instance()->accountName();
+        jObj["vpnpassword"] = AuthManager::instance()->accountPassword();
 
         sendCommand(jObj);
     } else {

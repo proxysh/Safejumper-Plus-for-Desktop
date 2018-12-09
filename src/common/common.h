@@ -29,11 +29,11 @@
 #include <string>
 #include <vector>
 
-#define kHELPER_LABEL "com.shieldtra.ShieldtraHelper"
+#define kHELPER_LABEL "sh.proxy.SafejumperHelper"
 
-const QString kAppName = "Shieldtra";
-const QString kOrgName = "com.shieldtra";
-const QString kLowerAppName = "shieldtra";
+const QString kAppName = "Safejumper";
+const QString kOrgName = "sh.proxy";
+const QString kLowerAppName = "safejumper";
 
 #define APP_BUILD_NUM 100
 #define APP_BUILD "100"
@@ -42,21 +42,28 @@ const QString kLowerAppName = "shieldtra";
 #define APPLICATION_VERSION QObject::tr("Version %1 (build %2)").arg(APP_VERSION).arg(APP_BUILD)
 
 #ifdef Q_OS_DARWIN
-#define UPDATE_URL "https://shieldtra.com/shieldtra_mac.xml"
+#define UPDATE_URL "https://proxy.sh/safejumper_mac.xml"
+#define OS_STRING "Mac"
 #endif
 
 #ifdef Q_OS_WIN
-#define UPDATE_URL "https://shieldtra.com/shieldtra_windows.xml"
+#define UPDATE_URL "https://proxy.sh/safejumper_windows.xml"
+#define OS_STRING "Windows"
 #endif
 
 #ifdef Q_OS_LINUX
-#define UPDATE_URL "https://shieldtra.com/shieldtra_linux.xml"
+#define UPDATE_URL "https://proxy.sh/safejumper_linux.xml"
+#define OS_STRING "Linux"
 #endif
 
-const QString kServersUrl = "https://shieldtra.com/servers";
-const QString kLoginUrl = "https://shieldtra.com/auth";
-const QString kCreateAccountUrl = "https://shieldtra.com/v1/user/add";
-const QString kOvpnUrl = "https://shieldtra.com/config";
+const QString kServersUrl = "https://api.proxy.sh/v2/public/servers";
+const QString kUserServersUrl = "https://api.proxy.sh/v2/public/access";
+const QString kHubsUrl = "https://api.proxy.sh/v2/public/hubs";
+const QString kUserHubsUrl = "https://api.proxy.sh/v2/public/access/hubs";
+const QString kLoginUrl = "https://api.proxy.sh/v2/public/account_info";
+
+const QString kCreateAccountUrl = "https://proxy.sh/v1/user/add";
+const QString kOvpnUrl = "https://api.proxy.sh/v2/public/config";
 
 const QString kNotConnectedFill = "#7a869a";
 const QString kConnectingFill = "#ffab00";
@@ -89,11 +96,11 @@ const QStringList kLanguageTranslations = {
     "gui_zh.qm"
 #else
 #ifdef Q_OS_DARWIN
-    "/Applications/Shieldtra.app/Contents/Resources/gui_en.qm",
-    "/Applications/Shieldtra.app/Contents/Resources/gui_zh.qm"
+    "/Applications/Safejumper.app/Contents/Resources/gui_en.qm",
+    "/Applications/Safejumper.app/Contents/Resources/gui_zh.qm"
 #else
-    "/opt/shieldtra/gui_en.qm",
-    "/opt/shieldtra/gui_zh.qm"
+    "/opt/safejumper/gui_en.qm",
+    "/opt/safejumper/gui_zh.qm"
 #endif
 #endif
 };
@@ -124,34 +131,32 @@ enum commands {
 };
 
 #ifdef Q_OS_WIN
-static const QString kSocketName = "ShieldtraVPN";
+static const QString kSocketName = "SafejumperVPN";
 #else
-static const QString kSocketName = "/var/tmp/ShieldtraVPN";
+static const QString kSocketName = "/var/tmp/SafejumperVPN";
 #endif
 
 enum EncryptionType {
-//    ENCRYPTION_RSA = 0,
-//    ENCRYPTION_TOR_OBFS2,
-//    ENCRYPTION_TOR_OBFS3,
-//    ENCRYPTION_TOR_SCRAMBLESUIT,
-//    ENCRYPTION_ECC,
-//    ENCRYPTION_ECCXOR,
-    ENCRYPTION_TLSCRYPT,
-    ENCRYPTION_TLSCRYPT_XOR,
+    ENCRYPTION_RSA = 0,
+    ENCRYPTION_TOR_OBFS2,
+    ENCRYPTION_TOR_OBFS3,
+    ENCRYPTION_TOR_SCRAMBLESUIT,
+    ENCRYPTION_ECC,
+    ENCRYPTION_ECCXOR,
+//    ENCRYPTION_TLSCRYPT,
+//    ENCRYPTION_TLSCRYPT_XOR,
     ENCRYPTION_COUNT
 };
 
 #define DEFAULT_ENCRYPTION ENCRYPTION_TLSCRYPT
 
 const QList<QString> encryptionNames = {
-//    "RSA 4096-bit",
-//    "RSA + TOR (obfs2)",
-//    "RSA + TOR (obfs3)",
-//    "RSA + TOR (scramblesuit)",
-//    "ECC (secp384r1)",
-//    "ECC + XOR",
-    "TLSCrypt",
-    "TLSCrypt + XOR",
+    "RSA 4096-bit",
+    "RSA + TOR (obfs2)",
+    "RSA + TOR (obfs3)",
+    "RSA + TOR (scramblesuit)",
+    "ECC (secp384r1)",
+    "ECC + XOR",
 };
 
 enum OpenVPNStateWord {

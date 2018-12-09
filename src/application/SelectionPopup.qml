@@ -32,6 +32,8 @@ Column {
     property string subtitle
     property variant itemModel
     property int selectedIndex
+    // Array of booleans specifying which rows should be visible
+    property variant itemVisible
 
     signal cancel()
     signal itemSelected(int index)
@@ -44,8 +46,9 @@ Column {
         id: selectionDelegate
         Item {
             width: 295
-            height: 48
+            height: visible ? 48 : 0
             anchors.left: parent.left
+            visible: selectionPopup.itemVisible ? selectionPopup.itemVisible[index] : true
 
             ShadowRect {
                 id: itemRect

@@ -18,14 +18,14 @@ Rectangle {
 
     function showPage2() {
         page = 2
-        if (stack.currentItem.objectName != "page4")
-            stack.push(page4);
+        if (stack.currentItem.objectName != "page6")
+            stack.push(page6);
     }
 
     function showPage3() {
         page = 3
-        if (stack.currentItem.objectName != "page3")
-            stack.push(page3);
+        if (stack.currentItem.objectName != "page2")
+            stack.push(page2);
     }
 
     function nextPage() {

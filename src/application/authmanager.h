@@ -30,6 +30,7 @@
 #include <QObject>
 #include <QPointer>
 #include <QProcess>
+#include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include <QString>
 #include <QUrl>
@@ -49,7 +50,7 @@
 #include <sys/types.h>
 
 #ifdef WIN32
-#include <winsock2.h>
+#include <WinSock2.h>
 #pragma comment(lib, "Ws2_32.lib")
 #else
 #include <sys/socket.h>
@@ -85,8 +86,6 @@ public:
 
     const QString & accountName();
     const QString & accountPassword();
-    const QString & VPNName();
-    const QString & VPNPassword();
     const QString & email();
     const QString & subscription();
     const QString & expiration();
@@ -95,17 +94,15 @@ public:
     const QString & oldIP();
 
     const QList<int> currentEncryptionServers();		// return IDs of servers inside _servers available for this encryption
-    const QList<int> & currentEncryptionHubs();					// return IDs of habs inside _servers
+    const QList<int> currentEncryptionHubs();					// return IDs of habs inside _servers
 
     const std::vector<std::pair<bool, int> > & getLevel0();		// <is hub, hub id / srv id>
     const std::vector<int> & getLevel1(size_t hub);					// for given hub id all the server ids, including hub entry itself
 
-    size_t serverIdFromHubId(size_t ixHub);
     AServer *getServer(int id);	 // on -1 returns nullptr
-    int hubIxFromServerName(const QString & srv);	  // -1 if not found
     int hubIdFromServerId(int ixsrv);			   // -1 if ixsrv not a hub
     int serverIxFromName(const QString & srv);		 // -1 if not found
-    AServer *getHub(int idhub);
+    AServer *getHub(int id);
 
     int pingFromServerIx(int srv);
 
@@ -128,6 +125,9 @@ public:
 
     // How many servers are in the current favorites list
     int favoritesCount();
+    ServersModel *hubsModel() const;
+
+    bool isServerListLoaded() const;
 
 public slots:
     void login(const QString & name, const QString & password);
@@ -137,7 +137,8 @@ public slots:
 
     void setNewIp(const QString & ip);
 
-    void getDefaultServerList();
+    void getServerList();
+    void getHubs();
 
     Q_INVOKABLE void nextFavorite();
     Q_INVOKABLE void previousFavorite();
@@ -153,6 +154,7 @@ signals:
 
     // Emitted when all server lists have been loaded
     void serverListsLoaded();
+    void hubsLoaded();
 
     void untilLoaded(QString until);
     void amountLoaded(QString amount);
@@ -174,6 +176,9 @@ private slots:
     void fetchServerListError(QNetworkReply::NetworkError error);
     void fetchServerListFinished();
 
+    void fetchHubsError(QNetworkReply::NetworkError error);
+    void fetchHubsFinished();
+
 //    void processObfsServerNamesXml();
 //    void processEccServerNamesXml();
 //    void processAccountTypeXml();
@@ -191,7 +196,7 @@ private:
 //    bool processServerNamesForEncryptionType(int enc, QString & out_msg);
     void populateServerIdsFromNames(QStringList names, QList<int> &serverList);		// for _obfs_names lookup respective server ix in _servers
 //    QStringList extractNames(QString & out_msg);
-    void pingAllServers();
+    void pingAllServers(bool hubs = false);
 
     void startPing(QProcess & pr, const QString & adr);		// pr must have already connected finished() signal
     int extractPing(QProcess & pr);		// exract ping value from pr's stdout; -1 on error / unavailable
@@ -207,22 +212,18 @@ private:
     bool mSeeded;
     void seed();
 
-    QList<AServer*> mHubs;
-    QList<int> mHubIds[ENCRYPTION_COUNT];		// IDs of hubs inside _servers available for each encryption		// _hub_ids[0] the same as _HubToServer
     std::vector<std::pair<bool, int> > mLevel0;		// <is hub, hub id / srv id>
     std::map<int, std::vector<int> > mLevel1;		// <hub id, <srv ids, including srv id of hub entry> >
     std::vector<int> mFake;
     void prepareLevels();
     int hubidForServerNode(int srv);					// -1 if cannot find hub for this srv
-    std::map<std::string, size_t> mHubClearedId;	//std::map<QString, size_t> _HubClearedId;		// <hub cleared name (w/o ' Hub'), its hub id>
+    QMap<QString, size_t> mHubClearedId;	//QMap<QString, size_t> _HubClearedId;		// <hub cleared name (w/o ' Hub'), its hub id>
     std::vector<size_t> mHubToServer;	   // id of hub inside _servers
     IIMap mServerIdToHubId;
     SIMap mServerNameToId;
 
     QString mAccountLogin;
     QString mAccountPassword;
-    QString mVPNLogin;
-    QString mVPNPassword;
 
     QString mNewIP;
     QString mOldIP;
@@ -236,18 +237,19 @@ private:
     QPointer<QNetworkReply> mReply;
     QPointer<QNetworkReply> mIPReply;
     QPointer<QNetworkReply> mCreateAccountReply;
-    QPointer<QNetworkReply> mDefaultServerListReply;
+    QPointer<QNetworkReply> mServerListReply;
+    QPointer<QNetworkReply> mHubsReply;
     int mIPAttemptCount;
     void clearReply();
     QPointer<QNetworkReply> mUpdateReply;
 
     std::vector<int> getPings(const std::vector<size_t> & toping);	// from _pings; do not wait for pings; return vec of the same size
     std::queue<size_t> mToPing;				// id inside _servers
+    std::queue<size_t> mHubToPing;
     bool mPingsLoaded;
 
     std::vector<QProcess *> mWorkers;		// 3 vectors of the same size WORKERS_NUM
     std::vector<PingWaiter *> mWaiters;
-    std::vector<size_t> mInProgress;			// id inside _servers
     std::vector<QTimer *>  mTimers;
     void startWorker(size_t id);
 
@@ -260,6 +262,7 @@ private:
     std::auto_ptr<PortForwarder> mPortForwarderThread;
 
     ServersModel *mServersModel;
+    ServersModel *mHubsModel;
 };
 
 #endif // AUTHMANAGER_H

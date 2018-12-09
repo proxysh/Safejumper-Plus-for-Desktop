@@ -29,8 +29,7 @@ class AServer: public QObject {
     Q_PROPERTY(QString address READ address WRITE setAddress NOTIFY addressChanged)
     Q_PROPERTY(QString ip READ ip WRITE setIP NOTIFY ipChanged)
     Q_PROPERTY(QString iso READ iso WRITE setISO NOTIFY isoChanged)
-    Q_PROPERTY(QVariantList ports READ ports WRITE setPorts NOTIFY portsChanged)
-    Q_PROPERTY(QVariantList xorPorts READ xorPorts WRITE setXorPorts NOTIFY xorPortsChanged)
+//    Q_PROPERTY(QVariantList ports READ ports WRITE setPorts NOTIFY portsChanged)
     Q_PROPERTY(int load READ load WRITE setLoad NOTIFY loadChanged)
     Q_PROPERTY(int ping READ ping WRITE setPing NOTIFY pingChanged)
     Q_PROPERTY(bool favorite READ favorite WRITE setFavorite NOTIFY favoriteChanged)
@@ -52,11 +51,8 @@ public:
     void setISO(const QString &iso);
     const QString iso() const;
 
-    void setPorts(const QVariantList &ports);
-    const QVariantList ports() const;
-
-    void setXorPorts(const QVariantList &xorPorts);
-    const QVariantList xorPorts() const;
+    void setPorts(int encryption, bool tcp, const QVariantList &ports);
+    const QVariantList ports(int encryption, bool tcp) const;
 
     void setLoad(int load);
     int load() const;
@@ -70,13 +66,19 @@ public:
     void setId(int id);
     int id() const;
 
+    // True if this server supports the given encryption type
+    Q_INVOKABLE bool supportsEncryption(int encryption);
+
+    Q_INVOKABLE const QVariantList supportedEncryptions();
+
+    Q_INVOKABLE const QVariantList supportedPorts(int encryption);
+
 signals:
     void nameChanged();
     void addressChanged();
     void ipChanged();
     void isoChanged();
     void portsChanged();
-    void xorPortsChanged();
     void loadChanged();
     void favoriteChanged();
     void pingChanged();
@@ -86,8 +88,8 @@ private:
     QString mAddress;    // DNs
     QString mIP;
     QString mIsoCode;
-    QVariantList mPorts;
-    QVariantList mXorPorts;
+    QMap<int, QVariantList> mTCPPorts;
+    QMap<int, QVariantList> mUDPPorts;
     int mLoad;       // double
     bool mFavorite;
     int mPing;

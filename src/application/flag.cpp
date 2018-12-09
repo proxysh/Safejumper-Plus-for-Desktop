@@ -61,6 +61,7 @@ static CountryDef gs_countries [] = {
 
     {"Lithuania", "LT", 150, 25},
     {"Luxembourg", "LU", 0, 0},
+    {"Mexico", "MX", 0, 0},
     {"Moldova", "MD", 156, 34},
     {"Netherlands", "NL", 0, 0},
     {"New Zealand", "NZ", 280, 125},
@@ -73,7 +74,8 @@ static CountryDef gs_countries [] = {
     {"Russia", "RU", 210, 20},
     {"Serbia", "RS", 0, 0},
     {"Singapore", "SG", 230, 63},
-    {"Slovakia", "SI", 0, 0},
+    {"Slovakia", "SK", 0, 0},
+    {"Slovenia", "SI", 0, 0},
     {"South Africa", "ZA", 148, 115},
     {"Spain", "ES", 125, 45},
     {"Sweden", "SE", 145, 22},
@@ -85,10 +87,11 @@ static CountryDef gs_countries [] = {
     {"Ukraine", "UA", 158, 34},
     {"United Kingdom", "GB", 118, 27},
     {"United States", "US", 37, 47},
+    {"Vietnam", "VN", 0, 0}
 };
 
 
-QString flag::IconFromSrvName(const QString & srv)
+QString flag::isoFromServerName(const QString & srv)
 {
     QString f = "_unknown";
     int id = IdFromName(srv);
@@ -112,7 +115,7 @@ QString flag::ShortName(const QString & name)
     return HandleTypo(s);
 }
 
-QString flag::ClearName(const QString & name)
+QString flag::clearName(const QString & name)
 {
     QString c = name;
     int p = name.indexOf(" Hub");

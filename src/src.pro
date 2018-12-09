@@ -17,11 +17,11 @@ SUBDIRS += \
     netdown
 
     # Bundle App name
-    BUNDLEAPP = "Shieldtra"
-    APPNAME = "Shieldtra.app"
-    HELPERAPP = com.shieldtra.ShieldtraHelper
-    HELPERAPP_INFO = ShieldtraHelper-Info.plist
-    HELPER_APP_LAUNCHD_INFO = com.shieldtra.ShieldtraHelper.plist
+    BUNDLEAPP = "Safejumper"
+    APPNAME = "Safejumper.app"
+    HELPERAPP = sh.proxy.SafejumperHelper
+    HELPERAPP_INFO = SafejumperHelper-Info.plist
+    HELPER_APP_LAUNCHD_INFO = sh.proxy.SafejumperHelper.plist
     RESOURCES_INST_DIR = $$shell_quote($$OUT_PWD/application/$${APPNAME}/Contents/Resources/)
 
     # Commands to organize the bundle app
@@ -39,7 +39,7 @@ SUBDIRS += \
     include (common/certificate.pri)
 
     # Bundle identifier for your application
-    BUNDLEID = com.shieldtra.Shieldtra
+    BUNDLEID = sh.proxy.Safejumper
 
     QMAKE_CFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
     QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO

@@ -39,6 +39,9 @@
 
 static QStringList subscriptions;
 
+#define kHubIndex "hub"
+#define kServerIndex "server"
+
 std::auto_ptr<AuthManager> AuthManager::mInstance;
 AuthManager * AuthManager::instance()
 {
@@ -63,7 +66,8 @@ AuthManager::AuthManager()
      mCancellingLogin(false),
      mSeeded(false),
      mIPAttemptCount(0),
-     mServersModel(new ServersModel(this))
+     mServersModel(new ServersModel(this)),
+     mHubsModel(new ServersModel(this))
 {
     subscriptions << AuthManager::tr("Free");
     subscriptions << AuthManager::tr("Standard");
@@ -84,12 +88,12 @@ AuthManager::~AuthManager()
                         {
                                 MainWindow * m = MainWindow::Instance();
                         }*/
-        if (mWorkers.at(k) != NULL) {
+        if (mWorkers.at(k) != nullptr) {
             if (mWorkers.at(k)->state() != QProcess::NotRunning)
                 mWorkers.at(k)->terminate();
             mWorkers.at(k)->deleteLater();
         }
-        if (mWaiters.at(k) != NULL)
+        if (mWaiters.at(k) != nullptr)
             delete mWaiters.at(k);
     }
     // TODO: -0 terminate Network Manager
@@ -107,15 +111,13 @@ void AuthManager::login(const QString & name, const QString & password)
     mAccountLogin = name;
     mAccountPassword = password;
 
-    // Shieldtra seems to use the same login and password for vpn as for server list, etc.
-    mVPNLogin = mAccountLogin;
-    mVPNPassword = mAccountPassword;
     mLoggedIn = false;
     mCancellingLogin = false;
     Log::logt("Starting login with name '" + QUrl::toPercentEncoding(name, "", "") + "'");
+    Log::logt("Password encoded is " + QUrl::toPercentEncoding(password, "", ""));
 
     QUrlQuery postData;
-    postData.addQueryItem("email", QUrl::toPercentEncoding(name, "", ""));
+    postData.addQueryItem("username", QUrl::toPercentEncoding(name, "", ""));
     postData.addQueryItem("password", QUrl::toPercentEncoding(password, "", ""));
 
     QNetworkRequest request(QUrl::fromUserInput(kLoginUrl));
@@ -145,8 +147,6 @@ void AuthManager::logout()
 {
     cancel();
     mLoggedIn = false;
-    mVPNLogin.clear();
-    mVPNPassword.clear();
     mAccountLogin.clear();
     mAccountPassword.clear();            // TODO: -2 secure clear
 
@@ -183,16 +183,6 @@ const QString &AuthManager::accountPassword()
     return mAccountPassword;
 }
 
-const QString &AuthManager::VPNName()
-{
-    return mVPNLogin;    // TODO: -1 check: still valid
-}
-
-const QString &AuthManager::VPNPassword()
-{
-    return mVPNPassword;
-}
-
 const QString &AuthManager::email()
 {
     return mEmail;
@@ -222,21 +212,32 @@ AServer *AuthManager::getServer(int id)
 {
     AServer *s = nullptr;
     //assert(id > -1);
-    if (id > -1 && id < mServersModel->count()) {
-        s = mServersModel->server(id);
+    if (Setting::instance()->showNodes()) {
+        if (id > -1 && id < mServersModel->count()) {
+            s = mServersModel->server(id);
+        } else {
+            Log::logt("getServer called with invalid id " + QString::number(id));
+        }
     } else {
-        Log::logt("getServer called with id " + QString::number(id));
+        if (id > - 1 && id < mHubsModel->count()) {
+            s = mHubsModel->server(id);
+        } else {
+            Log::logt("getServer called with invalid hub id " + QString::number(id));
+        }
     }
     return s;
 }
 
-AServer *AuthManager::getHub(int idhub)
+AServer *AuthManager::getHub(int id)
 {
-    int idsrv = -1;
-    if (idhub > -1 && idhub < mHubs.size()) {
-        idsrv = serverIdFromHubId(idhub);
+    AServer *s = nullptr;
+    //assert(id > -1);
+    if (id > -1 && id < mHubsModel->count()) {
+        s = mHubsModel->server(id);
+    } else {
+        Log::logt("getHub called with invalid id " + QString::number(id));
     }
-    return getServer(idsrv);
+    return s;
 }
 
 void AuthManager::setNewIp(const QString & ip)
@@ -248,17 +249,60 @@ void AuthManager::setNewIp(const QString & ip)
     }
 }
 
-void AuthManager::getDefaultServerList()
+void AuthManager::getServerList()
 {
-    Log::logt("Fetching default server list");
+    // If we are already loading a server list, stop the request
+    if (!mServerListReply.isNull() && !mServerListReply->isFinished())
+        mServerListReply->abort();
 
-    QNetworkRequest request(QUrl::fromUserInput(kServersUrl));
+    if (!mLoggedIn) {
+        Log::logt("Fetching default server list");
 
-    mDefaultServerListReply = mNAM.get(request);
-    connect(mDefaultServerListReply, SIGNAL(error(QNetworkReply::NetworkError)),
+        QNetworkRequest request(QUrl::fromUserInput(kServersUrl));
+
+        mServerListReply = mNAM.get(request);
+    } else {
+        Log::logt("Fetching server list for logged in user");
+
+        QUrlQuery postData;
+        postData.addQueryItem("username", QUrl::toPercentEncoding(mAccountLogin, "", ""));
+        postData.addQueryItem("password", QUrl::toPercentEncoding(mAccountPassword, "", ""));
+
+        QNetworkRequest request(QUrl::fromUserInput(kUserServersUrl));
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+        mServerListReply = mNAM.post(request, postData.toString(QUrl::FullyEncoded).toUtf8());
+    }
+    connect(mServerListReply, SIGNAL(error(QNetworkReply::NetworkError)),
             this, SLOT(fetchServerListError(QNetworkReply::NetworkError)));
-    connect(mDefaultServerListReply, SIGNAL(finished()),
+    connect(mServerListReply, SIGNAL(finished()),
             this, SLOT(fetchServerListFinished()));
+}
+
+void AuthManager::getHubs()
+{
+    if (!mLoggedIn) {
+        Log::logt("Fetching default hubs list");
+
+        QNetworkRequest request(QUrl::fromUserInput(kHubsUrl));
+
+        mHubsReply = mNAM.get(request);
+    } else {
+        Log::logt("Fetching hubs for logged in user");
+
+        QUrlQuery postData;
+        postData.addQueryItem("username", QUrl::toPercentEncoding(mAccountLogin, "", ""));
+        postData.addQueryItem("password", QUrl::toPercentEncoding(mAccountPassword, "", ""));
+
+        QNetworkRequest request(QUrl::fromUserInput(kUserHubsUrl));
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+        mHubsReply = mNAM.post(request, postData.toString(QUrl::FullyEncoded).toUtf8());
+    }
+    connect(mHubsReply, SIGNAL(error(QNetworkReply::NetworkError)),
+            this, SLOT(fetchHubsError(QNetworkReply::NetworkError)));
+    connect(mHubsReply, SIGNAL(finished()),
+            this, SLOT(fetchHubsFinished()));
 }
 
 void AuthManager::nextFavorite()
@@ -269,18 +313,38 @@ void AuthManager::nextFavorite()
     int index = startIndex;
     Log::logt(QString("Next favorite called, current favorite has index %1").arg(index));
     bool found = false;
-    while (!found) {
-        index++;
+    if (Setting::instance()->showNodes()) {
+        while (!found) {
+            index++;
 
-        // Don't go past the end of the list
-        if (index >= mServersModel->count()) {
-            return;
+            // Don't go past the end of the list
+            if (index >= mServersModel->count()) {
+                return;
+            }
+
+            if (mServersModel->server(index)->favorite()) {
+                found = true;
+                Setting::instance()->setFavorite(index);
+            }
+        }
+    } else {
+        while (!found) {
+            index++;
+
+            // Start over if we go past the end of the list
+            if (index >= mHubsModel->count())
+                index = 0;
+
+            // If we loop back on the startindex, give up
+            if (index == startIndex)
+                return;
+
+            if (mHubsModel->server(index)->favorite()) {
+                found = true;
+                Setting::instance()->setFavorite(index);
+            }
         }
 
-        if (mServersModel->server(index)->favorite()) {
-            found = true;
-            Setting::instance()->setFavorite(index);
-        }
     }
 }
 
@@ -298,9 +362,16 @@ void AuthManager::previousFavorite()
             return;
         }
 
-        if (mServersModel->server(index)->favorite()) {
-            found = true;
-            Setting::instance()->setFavorite(index);
+        if (Setting::instance()->showNodes()) {
+            if (mServersModel->server(index)->favorite()) {
+                found = true;
+                Setting::instance()->setFavorite(index);
+            }
+        } else {
+            if (mHubsModel->server(index)->favorite()) {
+                found = true;
+                Setting::instance()->setFavorite(index);
+            }
         }
     }
 }
@@ -309,7 +380,8 @@ bool AuthManager::hasNextFavorite()
 {
     int currentFavorite = Setting::instance()->favorite();
 
-    QList<int> favorites = mServersModel->favoriteServers();
+    QList<int> favorites = Setting::instance()->showNodes() ? mServersModel->favoriteServers()
+                                                            : mHubsModel->favoriteServers();
 
     int index = favorites.indexOf(currentFavorite);
 
@@ -320,7 +392,8 @@ bool AuthManager::hasPreviousFavorite()
 {
     int currentFavorite = Setting::instance()->favorite();
 
-    QList<int> favorites = mServersModel->favoriteServers();
+    QList<int> favorites = Setting::instance()->showNodes() ? mServersModel->favoriteServers()
+                                                            : mHubsModel->favoriteServers();
 
     int index = favorites.indexOf(currentFavorite);
 
@@ -342,33 +415,20 @@ const QList<int> AuthManager::currentEncryptionServers()
     return mServersModel->serversForEncryption(enc);
 }
 
-const QList<int> &AuthManager::currentEncryptionHubs()
+const QList<int> AuthManager::currentEncryptionHubs()
 {
-    if (mServersModel->count() > 0 && mHubs.isEmpty()) {
-        for (int k = 0; k < mServersModel->count(); ++k) {
-            if (mServersModel->server(k)->name().contains("Hub", Qt::CaseInsensitive)) {
-                mHubs.append(mServersModel->server(k));
-                mHubToServer.push_back(k);                      // the same as _hub_ids[0]
-                mHubIds[0].append(k);
-                mServerIdToHubId.insert(IIMap::value_type(k, mHubs.size() - 1));
-                std::string cleared = flag::ClearName(mServersModel->server(k)->name()).toStdString();          // QString cleared = flag::ClearName(_servers[k].name);
-                mHubClearedId.insert(std::make_pair(cleared, mHubs.size() - 1));
-            }
+    QList<int> servers = currentEncryptionServers();
+
+    QList<int> hubs;
+
+    // Now get the hub ids from these
+    Q_FOREACH(int i, servers) {
+        if (mServersModel->server(i)->name().contains("Hub")) {
+            hubs << i;
         }
     }
 
-    int enc = Setting::instance()->encryption();
-    // Now get all the hub ids for the current encryption
-//    if (mHubIds[enc].isEmpty() && enc < ENCRYPTION_ECC) { // Don't get hubs for ECC
-//        qDebug() << "populating hubs for enc " << enc << " from server list of size " << mServerIds[enc].size();
-//        for (int k = 0; k < mServerIds[enc].size(); ++k) {
-//            int serverId = mServerIds[enc].at(k);
-//            if (mServersModel->server(serverId).name.contains("Hub", Qt::CaseInsensitive)) {
-//                mHubIds[enc].append(serverId);
-//            }
-//        }
-//    }
-    return mHubIds[enc];
+    return hubs;
 }
 
 int AuthManager::hubidForServerNode(int srv)
@@ -376,10 +436,15 @@ int AuthManager::hubidForServerNode(int srv)
     int hub = -1;
     if (srv > -1 && srv < mServersModel->count()) {
         AServer *rs = mServersModel->server(srv);
-        std::string cleared = flag::ClearName(rs->name()).toStdString();       // QString cleared = flag::ClearName(rs.name);
-        std::map<std::string, size_t>::iterator it = mHubClearedId.find(cleared);
-        if (it != mHubClearedId.end())
-            hub = (int)(*it).second;
+        QString cleared = flag::clearName(rs->name());       // QString cleared = flag::ClearName(rs.name);
+        qDebug() << "looking for hub for server with cleared name " << cleared;
+        if (mHubClearedId.contains(cleared)) {
+            hub = mHubClearedId.value(cleared);
+            qDebug() << "found hub at hub index " << hub
+                     << " which has name " << mServersModel->server(hub)->name();
+        } else {
+            qDebug() << "No hub for cleared name " << cleared << " found ";
+        }
     } else {
         Log::logt("Hub ID For Server Node " + QString::number(srv) + " requested but out of bounds");
     }
@@ -397,14 +462,16 @@ void AuthManager::prepareLevels()
     Log::logt("prepareLevels called");
     // TODO: -1 special hub for boost
     if (mServersModel->count() > 0 && mLevel0.empty()) {
-        const QList<int> & hubs = currentEncryptionHubs();
+        const QList<int> hubs = currentEncryptionHubs();
+        qDebug() << "current encryption " << Setting::instance()->encryption()
+                 << " has " << hubs.size() << " hubs";
         std::set<int> hub_srvids;
         for (int k =0; k < hubs.size(); ++k) {
             int srv = hubs.at(k);  //ServerIdFromHubId(k);
             hub_srvids.insert(srv);
             std::vector<int> v;
             v.push_back(srv);
-            mLevel1.insert(std::make_pair(k, v));
+            mLevel1.insert(std::make_pair(srv, v));
         }
 
         const QList<int> & servers = currentEncryptionServers();
@@ -412,9 +479,9 @@ void AuthManager::prepareLevels()
             int srv = servers.at(k);
             std::set<int>::iterator it = hub_srvids.find(srv);
             if (it != hub_srvids.end()) {
-                mLevel0.push_back(std::make_pair(true, hubIdFromServerId(*it)));        // aready at lvl 1
-            } else {    // just server: lvl0 or lvl1
-                int chub = hubidForServerNode(k);
+                mLevel0.push_back(std::make_pair(true, *it));
+            } else {
+                int chub = hubidForServerNode(srv);
                 if (chub > -1) {
                     std::map<int, std::vector<int> >::iterator it2 = mLevel1.find(chub);
                     if (it2 != mLevel1.end()) {
@@ -437,34 +504,6 @@ const std::vector<int> & AuthManager::getLevel1(size_t hub)
         return mFake;
     else
         return (*it).second;
-}
-
-size_t AuthManager::serverIdFromHubId(size_t ixHub)
-{
-    if (ixHub < mHubToServer.size())
-        return mHubToServer.at(ixHub);
-    return -1;
-}
-
-int AuthManager::hubIxFromServerName(const QString & srv)
-{
-    int ix = -1;
-    if (!srv.isEmpty()) {
-        //int ixsrv = SrvIxFromName(srv);        // hint
-        int ixSpace = -1;
-        for (int k = srv.length() - 1; k > 0; --k) {
-            if (srv[k] == ' ') {
-                ixSpace = k;
-                break;
-            }
-        }
-        QString base = (ixSpace > -1 ? srv.left(ixSpace) : srv);
-        QString s3 = base + " Hub";
-        int ix2 = serverIxFromName(s3);    // try 'Canada' + ' Hub'
-        if (ix2 > -1)   // convert id into hub id
-            ix = hubIdFromServerId(ix2);
-    }
-    return ix;
 }
 
 int AuthManager::hubIdFromServerId(int ixsrv)
@@ -501,7 +540,6 @@ int AuthManager::pingFromServerIx(int srv)
 
 void AuthManager::clearServerLists()
 {
-    mHubs.clear();
     mLevel0.clear();
     mLevel1.clear();
     mHubToServer.clear();
@@ -1043,24 +1081,23 @@ QString AuthManager::processLoginResult()
             return error.errorString();
 
         QJsonObject documentObject = jsonDoc.object();
-        QJsonObject userObject = documentObject.value("user").toObject();
 
-        int userType = userObject.value("type").toString().toInt();
-        int userStatus = userObject.value("status").toString().toInt();
-        QDate expiration = QDate::fromString(userObject.value("expiration_date").toString(), "yyyy-MM-dd");
+        int package = documentObject.value("package").toString().toInt();
+        QDate expiration = QDate::fromString(documentObject.value("expire_date").toString(), "yyyy-MM-dd");
 
-        Log::logt(QString("User type is %1").arg(userType));
-        Log::logt(QString("User status is %1").arg(userStatus));
+        if (documentObject.contains("email")) {
+            mEmail = documentObject.value("email").toString();
+            Log::logt(QString("User e-mail address is %1").arg(mEmail));
+            emit emailLoaded(mEmail);
+        }
+
+        Log::logt(QString("User package is %1").arg(package));
         Log::logt(QString("User expiration is %1").arg(expiration.toString()));
-
-        if (userStatus == 0)
-            // Disabled account
-            return tr("The email and the password you've submitted do not match our database.");
 
         if (expiration.daysTo(QDate::currentDate()) > 0)
             return tr("The account has expired");
 
-        mSubscription = subscriptions.at(userType);
+        mSubscription = tr("$%1 Package").arg(package);
         emit subscriptionChanged();
 
         mLoggedIn = true;
@@ -1069,36 +1106,24 @@ QString AuthManager::processLoginResult()
         mExpiration = expiration.toString();
         emit untilLoaded(mExpiration);
 
-        mEmail = mAccountLogin;
-        emit emailLoaded(mEmail);
-
-        QJsonArray serversArray = documentObject.value("servers").toArray();
-
-        mServersModel->updateServers(serversArray);
-
-        emit serverListsLoaded();
+        // Now load user's server list and hubs list
+        getServerList();
     }
-
-    // force hubs
-//    const QList<int> & hubs = AuthManager::currentEncryptionHubs();
-//    if (hubs.isEmpty() && Setting::instance()->encryption() < ENCRYPTION_ECC) // Don't check hubs for ECC
-//        Log::logt("Cannot parse hubs");
-
-    if (!Setting::instance()->testing() && Setting::instance()->pingEnabled())
-        pingAllServers(); // No need to ping servers when in testing mode
 
     return message;
 }
 
-void AuthManager::pingAllServers()
+void AuthManager::pingAllServers(bool hubs)
 {
     Log::logt("pingAllServers called");
-    for (int k = 0; k < mServersModel->count(); ++k)
-        mToPing.push(k);
+    if (hubs)
+        for (int k = 0; k < mHubsModel->count(); ++k)
+            mHubToPing.push(k);
+    else
+        for (int k = 0; k < mServersModel->count(); ++k)
+            mToPing.push(k);
 
     if (mWorkers.empty()) {
-        mInProgress.assign(PINGWORKERS_NUM, 0);
-//        LoginWindow * m = LoginWindow::Instance();
         for (size_t k = 0; k < PINGWORKERS_NUM; ++k) {
             mWorkers.push_back(nullptr);
             mWaiters.push_back(new PingWaiter(k, this));
@@ -1107,7 +1132,7 @@ void AuthManager::pingAllServers()
     }
 
     mPingsLoaded = false;
-    for (size_t k = 0; k < mWorkers.size() && !mToPing.empty(); ++k)
+    for (size_t k = 0; k < mWorkers.size() && (!mToPing.empty() || !mHubToPing.empty()); ++k)
         startWorker(k);
 }
 
@@ -1115,11 +1140,9 @@ void AuthManager::startWorker(size_t id)
 {
     Log::logt("startWorker called with id " + QString::number(id));
     if (!mToPing.empty()) {
-        size_t srv = mToPing.front();
+        int srv = mToPing.front();
         mToPing.pop();
         Log::logt("startWorker will ping server number " + QString::number(srv));
-
-        mInProgress.at(id) = srv;
 
         if (mWorkers.at(id) != nullptr) {
             Log::logt("Workers at " + QString::number(id) + " not null, so disconnecting and terminating");
@@ -1133,11 +1156,43 @@ void AuthManager::startWorker(size_t id)
             }
         }
         mWorkers[id] = new QProcess(this);
+        mWorkers[id]->setProperty(kHubIndex, -1);
+        mWorkers[id]->setProperty(kServerIndex, srv);
         connect(mWorkers.at(id), static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
                 mWaiters.at(id), &PingWaiter::PingFinished);
         connect(mWorkers.at(id), &QProcess::errorOccurred,
                 mWaiters.at(id), &PingWaiter::PingError);
         startPing(*mWorkers.at(id), mServersModel->server(srv)->address());
+
+        connect(mTimers.at(id), &QTimer::timeout,
+                mWaiters.at(id), &PingWaiter::Timer_Terminate);
+        mTimers.at(id)->setSingleShot(true);
+        mTimers.at(id)->start(PINGWORKER_MAX_TIMEOUT);
+    } else if (!mHubToPing.empty()) {
+        int hub = mHubToPing.front();
+        mHubToPing.pop();
+        Log::logt("startWorker will ping hub number " + QString::number(hub));
+
+        if (mWorkers.at(id) != nullptr) {
+            Log::logt("Workers at " + QString::number(id) + " not null, so disconnecting and terminating");
+            disconnect(mWorkers.at(id), static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+                       mWaiters.at(id), &PingWaiter::PingFinished);
+            disconnect(mWorkers.at(id), &QProcess::errorOccurred,
+                       mWaiters.at(id), &PingWaiter::PingError);
+            if (mWorkers.at(id)->state() != QProcess::NotRunning) {
+                mWorkers.at(id)->terminate();
+                mWorkers.at(id)->deleteLater();
+            }
+        }
+        mWorkers[id] = new QProcess(this);
+        mWorkers[id]->setProperty(kHubIndex, hub);
+        mWorkers[id]->setProperty(kServerIndex, -1);
+        connect(mWorkers.at(id), static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+                mWaiters.at(id), &PingWaiter::PingFinished);
+        connect(mWorkers.at(id), &QProcess::errorOccurred,
+                mWaiters.at(id), &PingWaiter::PingError);
+        startPing(*mWorkers.at(id), mHubsModel->server(hub)->address());
+
         connect(mTimers.at(id), &QTimer::timeout,
                 mWaiters.at(id), &PingWaiter::Timer_Terminate);
         mTimers.at(id)->setSingleShot(true);
@@ -1154,8 +1209,17 @@ void AuthManager::pingComplete(size_t idWaiter)
     Log::logt("pingComplete called with id " + QString::number(idWaiter));
     mTimers.at(idWaiter)->stop();
     int p = extractPing(*mWorkers.at(idWaiter));
+    int hubIndex = mWorkers[idWaiter]->property(kHubIndex).toInt();
+    int serverIndex = mWorkers[idWaiter]->property(kServerIndex).toInt();
 //      Log::logt(_servers.at(_inprogress.at(idWaiter)).address + " Got ping " + QString::number(p));
-    mServersModel->setPing(mInProgress.at(idWaiter), p);
+
+    if (hubIndex >= 0) {
+        mHubsModel->setPing(hubIndex, p);
+    } else if (serverIndex >= 0) {
+        mServersModel->setPing(serverIndex, p);
+    } else {
+        Log::logt("No hub or server index set for ping somehow, ignoring result");
+    }
     startWorker(idWaiter);
 }
 
@@ -1164,8 +1228,16 @@ void AuthManager::pingError(size_t idWaiter)
     Log::logt("pingError called with id " + QString::number(idWaiter));
     mTimers.at(idWaiter)->stop();
     int p = extractPing(*mWorkers.at(idWaiter));
-//      Log::logt(_servers.at(_inprogress.at(idWaiter)).address + " ping process error, extracted ping: " + QString::number(p));
-    mServersModel->setPing(mInProgress.at(idWaiter), p);
+    int hubIndex = mWorkers[idWaiter]->property(kHubIndex).toInt();
+    int serverIndex = mWorkers[idWaiter]->property(kServerIndex).toInt();
+
+    if (hubIndex >= 0) {
+        mHubsModel->setPing(hubIndex, p);
+    } else if (serverIndex >= 0) {
+        mServersModel->setPing(serverIndex, p);
+    } else {
+        Log::logt("No hub or server index set for ping somehow, ignoring result");
+    }
     startWorker(idWaiter);
 }
 
@@ -1175,14 +1247,24 @@ void AuthManager::pingTerminated(size_t idWaiter)
     mWorkers.at(idWaiter)->terminate();
     int p = extractPing(*mWorkers.at(idWaiter));
 //      Log::logt(_servers.at(_inprogress.at(idWaiter)).address + " ping process terminated, extracted ping: " + QString::number(p));
-    mServersModel->setPing(mInProgress.at(idWaiter), p);
+    int hubIndex = mWorkers[idWaiter]->property(kHubIndex).toInt();
+    int serverIndex = mWorkers[idWaiter]->property(kServerIndex).toInt();
+//      Log::logt(_servers.at(_inprogress.at(idWaiter)).address + " Got ping " + QString::number(p));
+
+    if (hubIndex >= 0) {
+        mHubsModel->setPing(hubIndex, p);
+    } else if (serverIndex >= 0) {
+        mServersModel->setPing(serverIndex, p);
+    } else {
+        Log::logt("No hub or server index set for ping somehow, ignoring result");
+    }
     startWorker(idWaiter);
 }
 
 void AuthManager::seed()
 {
     if (!mSeeded) {
-        srand(time(NULL));
+        srand(time(nullptr));
         mSeeded = true;
     }
 }
@@ -1192,10 +1274,17 @@ std::vector<int> AuthManager::getPings(const std::vector<size_t> & toping)
     std::vector<int> v;
     v.assign(toping.size(), -1);
     for (size_t k = 0; k < toping.size(); ++k) {
-        if (toping.at(k) >= mServersModel->count())
-            Log::logt("GetPings(): Server id greater than size of pings coll");
-        else
-            v.at(k) = mServersModel->server(toping.at(k))->ping();
+        if (Setting::instance()->showNodes()) {
+            if (toping.at(k) >= mServersModel->count())
+                Log::logt("GetPings(): Server id greater than size of pings coll");
+            else
+                v.at(k) = mServersModel->server(toping.at(k))->ping();
+        } else {
+            if (toping.at(k) >= mHubsModel->count())
+                Log::logt("GetPings(): Server id greater than size of pings coll");
+            else
+                v.at(k) = mHubsModel->server(toping.at(k))->ping();
+        }
     }
     return v;
 }
@@ -1230,18 +1319,14 @@ int AuthManager::getServerToJump()
     } else {
         // jump to hub
         Log::logt("showNodes is not set, so getting pings of hubs");
-        int prevhub = hubIxFromServerName(getServer(prev)->name());
-        Log::logt("prevhub is " + QString::number(prevhub));
-        Log::logt("Looping through " + QString::number(mHubIds[enc].size()) + " hubs");
-        for (int k = 0; k < mHubIds[enc].size(); ++k) {
-            int ixsrv = serverIdFromHubId(mHubIds[enc].at(k));
-            if (ixsrv != prev) {
-                if (prevhub < 0)
-                    toping.push_back(ixsrv);
-                else {
-                    if (prevhub != k)
-                        toping.push_back(ixsrv);
-                }
+        Log::logt("prevhub is " + QString::number(prev));
+        Log::logt("Looping through " + QString::number(mHubsModel->count()) + " hubs");
+        for (int k = 0; k < mHubsModel->count(); ++k) {
+            if (prev < 0)
+                toping.push_back(k);
+            else {
+                if (prev != k)
+                    toping.push_back(k);
             }
         }
     }
@@ -1275,9 +1360,8 @@ int AuthManager::getServerToJump()
                 if (mServersModel->count() > 0)
                     srv = rand() % mServersModel->count();
             } else {
-                if (!mHubs.empty()) {
-                    int h = rand() % mHubs.size();
-                    srv = serverIdFromHubId(h);
+                if (mHubsModel->count() > 0) {
+                    srv = rand() % mHubsModel->count();
                 } else {
                     srv = 0; // We should always have one hub
                 }
@@ -1382,13 +1466,22 @@ int AuthManager::favoritesCount()
     return mServersModel->favoriteServers().count();
 }
 
+ServersModel *AuthManager::hubsModel() const
+{
+    return mHubsModel;
+}
+
+bool AuthManager::isServerListLoaded() const
+{
+    return mServersModel->count() > 0 && mHubsModel->count() > 0;
+}
+
 void AuthManager::loginFinished()
 {
     QString message = processLoginResult();
     Log::logt("loginFinished called message is " + message);
     if (message.isEmpty()) {
         VPNServiceManager::instance()->sendCredentials();
-        emit loggedInChanged();
     } else {
         // Login failed, so get default server list instead
         getDefaultServerList();
@@ -1408,31 +1501,32 @@ void AuthManager::createAccountFinished()
 
 void AuthManager::fetchServerListError(QNetworkReply::NetworkError error)
 {
-    Log::logt("Error fetching default server list, retrying in 5 seconds");
-    QTimer::singleShot(5000, this, &AuthManager::getDefaultServerList);
+    Log::logt("Error fetching server list, retrying in 5 seconds");
+    QTimer::singleShot(5000, this, &AuthManager::getServerList);
 }
 
 void AuthManager::fetchServerListFinished()
 {
-    if (mDefaultServerListReply->error() != QNetworkReply::NoError) {
+    if (mServerListReply->error() != QNetworkReply::NoError) {
         Log::logt("Error fetching default server list");
     } else {
-        QByteArray ba = mDefaultServerListReply->readAll();
+        QByteArray ba = mServerListReply->readAll();
         if (ba.isEmpty()) {
-            Log::logt("default server list is empty, trying again in 5 seconds");
-            QTimer::singleShot(5000, this, &AuthManager::getDefaultServerList);
+            Log::logt("server list is empty, trying again in 5 seconds");
+            QTimer::singleShot(5000, this, &AuthManager::getServerList);
             return;
         }
 
-        Log::logt("json response to default server list is " + QString(ba));
+        Log::logt("json response to server list:");
+        Log::logt(QString::fromLatin1(ba));
 
         // Parse json response
         QJsonParseError error;
         QJsonDocument jsonDoc = QJsonDocument::fromJson(ba, &error);
 
         if (jsonDoc.isNull()) {
-            Log::logt("json document from default server list is invalid, trying again in 5 seconds: error: " + error.errorString());
-            QTimer::singleShot(5000, this, &AuthManager::getDefaultServerList);
+            Log::logt("json document from server list is invalid, trying again in 5 seconds: error: " + error.errorString());
+            QTimer::singleShot(5000, this, &AuthManager::getServerList);
             return;
         }
 
@@ -1440,16 +1534,72 @@ void AuthManager::fetchServerListFinished()
 
         mServersModel->updateServers(serversArray);
 
-        emit serverListsLoaded();
+        qDebug() << "Populating hubcleared list";
+        mHubClearedId.clear();
+
+        for (int i = 0; i < mServersModel->count(); ++i) {
+            AServer *hub = mServersModel->server(i);
+            if (hub->name().contains("Hub")) {
+                QString clearName = flag::clearName(hub->name());
+                qDebug() << "Adding hub cleared name for hub " << hub->name() << " with id " << hub->id() << " and cleared name " << clearName;
+                mHubClearedId.insert(clearName, hub->id());
+            }
+        }
+
+        if (mServersModel->count() > 0 && mHubsModel->count() > 0)
+            emit serverListsLoaded();
     }
 
-    // force hubs
-//    const QList<int> & hubs = AuthManager::currentEncryptionHubs();
-//    if (hubs.isEmpty() && Setting::instance()->encryption() < ENCRYPTION_ECC) // Don't check hubs for ECC
-//        Log::logt("Cannot parse hubs");
+    getHubs();
 
     if (!Setting::instance()->testing() && Setting::instance()->pingEnabled())
-        pingAllServers(); // No need to ping servers when in testing mode
+        pingAllServers(false); // No need to ping servers when in testing mode
+}
+
+void AuthManager::fetchHubsError(QNetworkReply::NetworkError error)
+{
+    Log::logt("Error fetching hub list, retrying in 5 seconds");
+    QTimer::singleShot(5000, this, &AuthManager::getHubs);
+}
+
+void AuthManager::fetchHubsFinished()
+{
+    if (mHubsReply->error() != QNetworkReply::NoError) {
+        Log::logt("Error fetching hubs list");
+    } else {
+        QByteArray ba = mHubsReply->readAll();
+        if (ba.isEmpty()) {
+            Log::logt("hubs list is empty, trying again in 5 seconds");
+            QTimer::singleShot(5000, this, &AuthManager::getHubs);
+            return;
+        }
+
+        Log::logt("json response to hubs list is " + QString(ba));
+
+        // Parse json response
+        QJsonParseError error;
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(ba, &error);
+
+        if (jsonDoc.isNull()) {
+            Log::logt("json document from hubs list is invalid, trying again in 5 seconds: error: " + error.errorString());
+            QTimer::singleShot(5000, this, &AuthManager::getHubs);
+            return;
+        }
+
+        QJsonArray serversArray = jsonDoc.array();
+
+        mHubsModel->updateServers(serversArray);
+//        Log::logt("Appending hub data to server list");
+//        mServersModel->appendServers(serversArray);
+
+        emit hubsLoaded();
+
+        if (mServersModel->count() > 0 && mHubsModel->count() > 0)
+            emit serverListsLoaded();
+    }
+
+    if (!Setting::instance()->testing() && Setting::instance()->pingEnabled())
+        pingAllServers(true); // No need to ping servers when in testing mode
 }
 
 void AuthManager::startPing(QProcess & pr, const QString & adr)

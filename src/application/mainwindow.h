@@ -55,8 +55,6 @@ public slots:
 
     void languageChanged();
 
-    void showConfirmation(const QString &text);
-
     void closeWindow();
 
     void shutDown();

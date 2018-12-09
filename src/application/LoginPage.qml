@@ -36,7 +36,7 @@ Rectangle {
     function performLogin()
     {
         loginButton.enabled = false;
-        authmanager.login(emailBox.value, passwordBox.value);
+        authmanager.login(usernameBox.value, passwordBox.value);
     }
 
     Column {
@@ -93,10 +93,10 @@ Rectangle {
         }
 
         HintedTextField {
-            id: emailBox
+            id: usernameBox
             width: 327
             height: 56
-            hint: qsTr("EMAIL");
+            hint: qsTr("USERNAME");
             value: settings.rememberMe ? settings.login : ""
             onAccepted: { performLogin(); }
         }

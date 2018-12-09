@@ -1,8 +1,8 @@
 #!/bin/sh
 
 if [ -x /bin/systemctl ]; then
-    systemctl disable shieldtra
-    systemctl stop shieldtra
+    systemctl disable safejumper
+    systemctl stop safejumper
 fi
 
 #DEBHELPER#

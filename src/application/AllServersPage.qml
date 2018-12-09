@@ -32,7 +32,7 @@ Item {
     function setEncryption(index)
     {
         // Set the encryption type for the currently selected server
-        settings.setServerEncryption(serversModel.server(allServersList.currentIndex).address, index);
+        settings.setServerEncryption(allserversmodel.server(allServersList.currentIndex).address, index);
         allServersList.currentItem.refresh();
     }
 
@@ -40,7 +40,7 @@ Item {
     {
         // Set the port for the currently selected server
         var encryption = settings.serverEncryption(allServersList.currentIndex)
-        settings.setServerProtocol(serversModel.server(allServersList.currentIndex).address, encryption, index);
+        settings.setServerProtocol(allserversmodel.server(allServersList.currentIndex).address, encryption, index);
         allServersList.currentItem.refresh();
     }
 
@@ -64,7 +64,7 @@ Item {
             width: parent.width - 40 // 20px margin on either side
             anchors.horizontalCenter: parent.horizontalCenter
 
-            model: serversModel
+            model: allserversmodel
             spacing: 10
             clip: true
             currentIndex: settings.server
@@ -72,7 +72,7 @@ Item {
             delegate:
                 ServerCard {
                     selectable: true
-                    currentServer: serversModel.server(index)
+                    currentServer: allserversmodel.server(index)
                     isCurrentServer: index == settings.server
                     showOptions: index == allServersList.currentIndex
                     showButton: index == allServersList.currentIndex

@@ -32,13 +32,13 @@ Item {
     signal allServersClicked()
     signal showLogin()
 
-    property Server currentServer: serversModel.server(settings.server)
-    property Server favoriteServer: serversModel.server(settings.favorite)
+    property Server currentServer: allserversmodel.server(settings.server)
+    property Server favoriteServer: allserversmodel.server(settings.favorite)
 
     function refresh()
     {
-        currentServer = serversModel.server(settings.server)
-        favoriteServer = serversModel.server(settings.favorite)
+        currentServer = allserversmodel.server(settings.server)
+        favoriteServer = allserversmodel.server(settings.favorite)
         var iso = favoriteServer.iso
         currentServerCard.currentServer = currentServer;
         if (!background2.source)
@@ -59,8 +59,8 @@ Item {
 
     function stateChanged()
     {
-        currentServer = serversModel.server(settings.server)
-        favoriteServer = serversModel.server(settings.favorite)
+        currentServer = allserversmodel.server(settings.server)
+        favoriteServer = allserversmodel.server(settings.favorite)
         var iso = favoriteServer.iso
         background.source = settings.mapData() // "../maps/" + iso + vpnservicemanager.stateMapSuffix
         background.x = -settings.mapXOffset()
@@ -167,6 +167,7 @@ Item {
     Image {
         source: "../images/mapshadow.png"
         anchors.bottom: parent.bottom
+        anchors.left: parent.left
     }
 
     Column {

@@ -77,26 +77,23 @@ const QString AServer::iso() const
     return mIsoCode;
 }
 
-void AServer::setPorts(const QVariantList &ports)
+void AServer::setPorts(int encryption, bool tcp, const QVariantList &ports)
 {
-    mPorts = ports;
+    if (tcp)
+        mTCPPorts.insert(encryption, ports);
+    else {
+        mUDPPorts.insert(encryption, ports);
+    }
     emit portsChanged();
 }
 
-const QVariantList AServer::ports() const
+const QVariantList AServer::ports(int encryption, bool tcp) const
 {
-    return mPorts;
-}
-
-void AServer::setXorPorts(const QVariantList &xorPorts)
-{
-    mXorPorts = xorPorts;
-    emit xorPortsChanged();
-}
-
-const QVariantList AServer::xorPorts() const
-{
-    return mXorPorts;
+    if (tcp)
+        return mTCPPorts.value(encryption);
+    else {
+        return mUDPPorts.value(encryption);
+    }
 }
 
 void AServer::setLoad(int load)
@@ -144,4 +141,58 @@ void AServer::setId(int id)
 int AServer::id() const
 {
     return mId;
+}
+
+bool AServer::supportsEncryption(int encryption)
+{
+    if (mTCPPorts.contains(encryption) || mUDPPorts.contains(encryption))
+        return true;
+
+    return false;
+}
+
+const QVariantList AServer::supportedEncryptions()
+{
+    QVariantList encryptions;
+    for (int i = 0; i < ENCRYPTION_COUNT; ++i)
+        if (supportsEncryption(i)) {
+            encryptions << true;
+        } else {
+            encryptions << false;
+        }
+
+    return encryptions;
+}
+
+const QVariantList AServer::supportedPorts(int encryption)
+{
+    // Iterate over the tcp and udp ports for the given encryption
+    // If this server supports the given port, add true to the list, otherwise
+    // add false
+    QVariantList enabled;
+
+    QStringList encryptionPorts = Setting::instance()->portsForEncryption(encryption);
+
+    Q_FOREACH(const QString &port, encryptionPorts) {
+        // See if the port is tcp or udp
+        // then see if it's in the list of ports for this server
+        // Then add true or false to enabled list
+        bool tcp = port.startsWith("T", Qt::CaseInsensitive);
+        int portNumber = port.split(" ").last().toInt();
+        if (tcp) {
+            if (mTCPPorts.value(encryption).contains(portNumber)) {
+                enabled << true;
+            } else {
+                enabled << false;
+            }
+        } else {
+            if (mUDPPorts.value(encryption).contains(portNumber)) {
+                enabled << true;
+            } else {
+                enabled << false;
+            }
+        }
+    }
+
+    return enabled;
 }

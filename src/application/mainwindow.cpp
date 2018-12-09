@@ -51,6 +51,7 @@ MainWindow::MainWindow() :
 {
     rootContext()->setContextProperty("authmanager", AuthManager::instance());
     rootContext()->setContextProperty("serversModel", AuthManager::instance()->serversModel());
+    rootContext()->setContextProperty("hubsModel", AuthManager::instance()->hubsModel());
     rootContext()->setContextProperty("settings", Setting::instance());
     rootContext()->setContextProperty("mainwindow", this);
     rootContext()->setContextProperty("vpnservicemanager", VPNServiceManager::instance());
@@ -117,8 +118,9 @@ MainWindow::MainWindow() :
     if (Setting::instance()->autoconnect() && !Setting::instance()->login().isEmpty()
             && !Setting::instance()->password().isEmpty())
         AuthManager::instance()->login(Setting::instance()->login(), Setting::instance()->password());
-    else
-        AuthManager::instance()->getDefaultServerList();
+    else {
+        AuthManager::instance()->getServerList();
+    }
 }
 
 void MainWindow::shutDown()
@@ -279,11 +281,6 @@ void MainWindow::languageChanged()
     rootContext()->engine()->retranslate();
 }
 
-void MainWindow::showConfirmation(const QString &text)
-{
-    // Show confirmation message in qml gui
-}
-
 void MainWindow::on_cancelFeedbackButton_clicked()
 {
     showConnection();
@@ -302,7 +299,7 @@ void MainWindow::on_sendFeedbackButton_clicked()
 //    }
 
     QString email = AuthManager::instance()->email();
-    QString loginName = AuthManager::instance()->VPNName();
+    QString loginName = AuthManager::instance()->accountName();
 
     QString feedbackText; // = ui->feedbackTextEdit->toPlainText();
     QFile debugLog(PathHelper::Instance()->applicationLogFilename());

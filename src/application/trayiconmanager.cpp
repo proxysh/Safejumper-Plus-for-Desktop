@@ -47,8 +47,8 @@ TrayIconManager::TrayIconManager(QWidget *parent)
             this, &TrayIconManager::constructConnectToMenu);
     connect(AuthManager::instance(), &AuthManager::serverListsLoaded,
             this, &TrayIconManager::constructConnectToMenu);
-    connect(AuthManager::instance(), &AuthManager::loggedInChanged,
-            this, &TrayIconManager::loggedInChanged);
+//    connect(AuthManager::instance(), &AuthManager::loggedInChanged,
+//            this, &TrayIconManager::loggedInChanged);
 
     connect(VPNServiceManager::instance(), &VPNServiceManager::stateChanged,
             this, &TrayIconManager::stateChanged);
@@ -140,8 +140,7 @@ void TrayIconManager::createTrayIconMenu()
         mTrayIconMenu->addAction(mWebManageAction.get());
         mTrayIconMenu->addAction(mSupportAction.get());
         mTrayIconMenu->addAction(mBugAction.get());
-        // Not used in Shieldtra
-//        mTrayIconMenu->addAction(mEarnAction.get());
+        mTrayIconMenu->addAction(mEarnAction.get());
         mTrayIconMenu->addSeparator();
     }
 
@@ -301,7 +300,7 @@ void TrayIconManager::connectToTriggered()
 {
     // Get the action from the sender
     QAction *action = qobject_cast<QAction*>(sender());
-    if (action != NULL) {
+    if (action != nullptr) {
         // Get the action's server id
         if (AuthManager::instance()->loggedIn()) {
             size_t serverId = action->data().toInt();
@@ -388,7 +387,7 @@ void TrayIconManager::constructConnectToMenu()
 
     if (AuthManager::exists()) {
         AuthManager * am = AuthManager::instance();
-        if (am->loggedIn()) {
+        if (am->loggedIn() && am->isServerListLoaded()) {
             qDebug() << "Logged in, so clearing connect to menu";
             clearConnectToMenu();
 
@@ -397,7 +396,7 @@ void TrayIconManager::constructConnectToMenu()
                 mTrayIconMenu->removeAction(mConnectToAction.get());
                 mTrayIconMenu->insertMenu(mDisconnectAction.get(), mConnectToMenu.get());
             }
-//            if (Setting::instance()->showNodes() || Setting::instance()->encryption() >= ENCRYPTION_ECC) {
+            if (Setting::instance()->showNodes() || Setting::instance()->encryption() >= ENCRYPTION_ECC) {
                 // Use list of servers instead of hubs for ECC and ECC_XOR
                 const QList<int> &servers = am->currentEncryptionServers();
                 qDebug() << "current encryption servers list has size " << servers.size();
@@ -405,36 +404,42 @@ void TrayIconManager::constructConnectToMenu()
                     AServer *server = am->getServer(servers.at(k));
                     createMenuItem(mConnectToMenu.get(), server->name(), servers.at(k));
                 }
-//            } else {
+            } else {
+                // ShowAllNodes is disabled, so only show hubs with servers underneath
 //                const QList<int> & hubs = am->currentEncryptionHubs();
-//                //_ct_menu->setIcon(QIcon(":/icons-tm/connect-red.png"));
+                //_ct_menu->setIcon(QIcon(":/icons-tm/connect-red.png"));
 
-//                const std::vector<std::pair<bool, int> > & L0 = am->getLevel0();
-//                for (size_t k = 0; k < L0.size(); ++k) {
-//                    if (L0[k].first) {
-//                        // hub - add submenu
-//                        int idhub = L0[k].second;
-//                        AServer h = am->getHub(idhub);
-//                        QMenu * m = new QMenu(h.name);
-//                        mHubMenus.push_back(m);
+                qDebug() << "Show all nodes is off, so adding hubs to menu";
 
-//                        // add into it all individual servers
-//                        const std::vector<int> & L1 = am->getLevel1(idhub);
-//                        for (size_t k = 0; k < L1.size(); ++k) {
-//                            int idsrv = L1[k];
-//                            if (idsrv > -1) {
-//                                AServer se = am->getServer(idsrv);
-//                                createMenuItem(m, se.name, idsrv);
-//                            }
-//                        }
-//                        mConnectToMenu->addMenu(m);
-//                    } else {	// just a server without hub
-//                        int idsrv = L0[k].second;
-//                        AServer se = am->getServer(idsrv);
-//                        createMenuItem(mConnectToMenu.get(), se.name, idsrv);
-//                    }
-//                }
-//            }
+                const std::vector<std::pair<bool, int> > & L0 = am->getLevel0();
+
+                qDebug() << "level 0 has " << L0.size();
+
+                for (size_t k = 0; k < L0.size(); ++k) {
+                    if (L0[k].first) {
+                        // hub - add submenu
+                        int idhub = L0[k].second;
+                        AServer *h = am->getServer(idhub);
+                        QMenu * m = new QMenu(h->name());
+                        mHubMenus.push_back(m);
+
+                        // add into it all individual servers
+                        const std::vector<int> & L1 = am->getLevel1(idhub);
+                        for (size_t k = 0; k < L1.size(); ++k) {
+                            int idsrv = L1[k];
+                            if (idsrv > -1) {
+                                AServer *se = am->getServer(idsrv);
+                                createMenuItem(m, se->name(), idsrv);
+                            }
+                        }
+                        mConnectToMenu->addMenu(m);
+                    } else {	// just a server without hub
+                        int idsrv = L0[k].second;
+                        AServer *se = am->getServer(idsrv);
+                        createMenuItem(mConnectToMenu.get(), se->name(), idsrv);
+                    }
+                }
+            }
             mConnectToMenu->setEnabled(true);
         }
     }

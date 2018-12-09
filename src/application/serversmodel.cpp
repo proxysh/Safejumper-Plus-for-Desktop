@@ -16,14 +16,19 @@
 
 #include "serversmodel.h"
 
+#include "flag.h"
+#include "protocol.h"
 #include "setting.h"
 
 #include <QJsonObject>
 #include <QQmlApplicationEngine>
 
+#include <QDebug>
+
 ServersModel::ServersModel(QObject *parent)
     :QAbstractListModel(parent)
 {
+    mServers.clear();
     setObjectName("ServersModel");
 
     qmlRegisterType<AServer>("vpn.server", 1, 0, "Server");
@@ -60,13 +65,9 @@ QVariant ServersModel::data(const QModelIndex &index, int role) const
             retval = server->load();
             break;
 
-        case portsRole:
-            retval = server->ports();
-            break;
-
-        case xorPortsRole:
-            retval = server->xorPorts();
-            break;
+//        case portsRole:
+//            retval = server->ports();
+//            break;
 
         case ipRole:
             retval = server->ip();
@@ -98,7 +99,6 @@ QHash<int, QByteArray> ServersModel::roleNames() const
     roles[hostnameRole] = "hostname";
     roles[ipRole] = "ip";
     roles[portsRole] = "ports";
-    roles[xorPortsRole] = "xorports";
     roles[favoriteRole] = "favorite";
     roles[loadRole] = "load";
     roles[pingRole] = "ping";
@@ -108,59 +108,92 @@ QHash<int, QByteArray> ServersModel::roleNames() const
 
 void ServersModel::updateServers(const QJsonArray &servers)
 {
-    beginResetModel();
-
     mServers.clear();
 
-    QStringList tlsPortsList;
-    QList<int> tlsPortNumbersList;
+    appendServers(servers);
+}
 
-    QStringList xorPortsList;
-    QList<int> xorPortNumbersList;
+void ServersModel::appendServers(const QJsonArray &servers)
+{
+    beginResetModel();
 
-    int id = 0;
+    // One list of protocols per encryption type
+    QList<Protocol> portsForEncryption[ENCRYPTION_COUNT];
+
     Q_FOREACH(const QJsonValue &server, servers) {
+        QJsonObject serverObject = server.toObject();
         AServer *newServer = new AServer(this);
-        newServer->setId(id);
-        newServer->setIP(server.toObject().value("ip").toString());
-        newServer->setName(server.toObject().value("name").toString());
-        newServer->setAddress(server.toObject().value("hostname").toString());
-        newServer->setISO(server.toObject().value("iso_code").toString());
-        QString portsString = server.toObject().value("ports").toString();
-        QStringList portsList = portsString.split(", ");
-        QVariantList ports;
-        Q_FOREACH(const QString &port, portsList) {
-            int portNumber = port.toInt();
-            ports << portNumber;
-            if (!tlsPortNumbersList.contains(portNumber)) {
-                tlsPortsList << QString("TCP %1").arg(port) << QString("UDP %1").arg(port);
-                tlsPortNumbersList << portNumber << portNumber;
+        newServer->setIP(serverObject.value("ip").toString());
+        newServer->setName(serverObject.value("name").toString());
+        newServer->setAddress(serverObject.value("hostname").toString());
+        newServer->setISO(serverObject.value("iso_code").toString());
+        QJsonValue serverPorts = serverObject.value("ports");
+        QJsonValue tcpPorts = serverPorts.toObject().value("tcp");
+        QJsonValue udpPorts = serverPorts.toObject().value("udp");
+        QStringList types;
+        // IMPORTANT: Make sure the order here is the same as the encryption enumeration
+        types << "plain" << "obfs2" << "obfs3" << "scramblesuit" << "ecc" << "xor";
+        int encryption = ENCRYPTION_RSA;
+        Q_FOREACH(const QString &type, types) {
+            QVariantList tcpVariantList;
+            QVariantList udpVariantList;
+            QJsonArray tcpList = tcpPorts.toObject().value(type).toArray();
+            QJsonArray udpList = udpPorts.toObject().value(type).toArray();
+            if (tcpList.size() > 0) {
+                Q_FOREACH(const QJsonValue &value, tcpList) {
+                    Protocol newProtocol;
+                    newProtocol.setTcp(true);
+                    newProtocol.setPort(value.toInt());
+                    tcpVariantList << value.toInt();
+                    if (!portsForEncryption[encryption].contains(newProtocol)) {
+                        portsForEncryption[encryption].append(newProtocol);
+                    }
+                }
+                newServer->setPorts(encryption, true, tcpVariantList);
             }
-        }
-        newServer->setPorts(ports);
 
-        QString xorPortsString = server.toObject().value("ports_xor").toString();
-        portsList = xorPortsString.split(", ");
-        ports.clear();
-        Q_FOREACH(const QString &port, portsList) {
-            int portNumber = port.toInt();
-            ports << portNumber;
-            if (!xorPortNumbersList.contains(portNumber)) {
-                xorPortsList << QString("TCP %1").arg(port) << QString("UDP %1").arg(port);
-                xorPortNumbersList << portNumber << portNumber;
+            if (udpList.size() > 0) {
+                Q_FOREACH(const QJsonValue &value, udpList) {
+                    Protocol newProtocol;
+                    newProtocol.setTcp(false);
+                    newProtocol.setPort(value.toInt());
+                    udpVariantList << value.toInt();
+                    if (!portsForEncryption[encryption].contains(newProtocol)) {
+                        portsForEncryption[encryption].append(newProtocol);
+                    }
+                }
+                newServer->setPorts(encryption, false, udpVariantList);
             }
+            encryption++;
         }
-        newServer->setXorPorts(ports);
-        newServer->setLoad(server.toObject().value("serverload").toString().toInt());
+        newServer->setLoad(server.toObject().value("server_load").toString().toInt());
         // TODO: Load if this server is a favorite from settings
         newServer->setFavorite(Setting::instance()->favorites().contains(newServer->address()));
         newServer->setPing(-1);
         mServers.append(newServer);
+    }
+
+    // Now sort mServers by name
+    std::sort(mServers.begin(), mServers.end(), [](AServer * a, AServer * b) {
+        return a->name() < b->name();
+    });
+
+    // Reset ids since we just sorted the list
+    int id = 0;
+    Q_FOREACH(AServer *server, mServers) {
+        server->setId(id);
         ++id;
     }
 
-    Setting::instance()->setEncryptionPorts(ENCRYPTION_TLSCRYPT, tlsPortsList, tlsPortNumbersList);
-    Setting::instance()->setEncryptionPorts(ENCRYPTION_TLSCRYPT_XOR, xorPortsList, xorPortNumbersList);
+    for (int encryption = 0; encryption < ENCRYPTION_COUNT; ++encryption) {
+        QStringList portNameList;
+        QList<int>  portNumberList;
+        Q_FOREACH(Protocol protocol, portsForEncryption[encryption]) {
+            portNumberList.append(protocol.port());
+            portNameList.append(protocol.displayName());
+        }
+        Setting::instance()->setEncryptionPorts(encryption, portNameList, portNumberList);
+    }
 
     endResetModel();
 }
@@ -186,11 +219,15 @@ void ServersModel::setPing(int index, int ping)
 
 QList<int> ServersModel::serversForEncryption(int encryption)
 {
-    // Shieldtra all servers are for all encryption types, so just return
-    // the same list here
     QList<int> ids;
-    for (int i = 0; i < mServers.count(); ++i)
-        ids << i;
+    qDebug() << "serversForEncryption called with encryption " << encryption
+             << " mServers.count() is " << mServers.count();
+    for (int i = 0; i < mServers.count(); ++i) {
+        if (mServers.at(i)->supportsEncryption(encryption))
+            ids << i;
+    }
+
+    qDebug() << "found " << ids.count() << " servers for encryption " << encryption;
 
     return ids;
 }
