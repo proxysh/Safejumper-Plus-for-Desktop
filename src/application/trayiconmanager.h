@@ -120,6 +120,7 @@ private:
     std::auto_ptr<QAction> mCloseAction;
 
 #ifdef Q_OS_DARWIN
+    std::auto_ptr<QAction> mCloseAction2;
     std::auto_ptr<QTimer> mIconTimer;
 #endif
 

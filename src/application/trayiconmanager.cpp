@@ -147,6 +147,9 @@ void TrayIconManager::createTrayIconMenu()
     //_TrayMenu->addAction(_ac_About.get());
     mTrayIconMenu->addAction(mLogoutAction.get());
     mTrayIconMenu->addAction(mCloseAction.get());
+#ifdef Q_OS_DARWIN
+    mTrayIconMenu->addAction(mCloseAction2.get());
+#endif
 }
 
 void TrayIconManager::createMenuActions()
@@ -217,6 +220,9 @@ void TrayIconManager::createMenuActions()
 #ifdef Q_OS_DARWIN
     mCloseAction->setShortcut(QKeySequence::Quit);
     mCloseAction->setMenuRole(QAction::QuitRole);
+
+    mCloseAction2.reset(new QAction(tr("Close"), this));
+    connect(mCloseAction2.get(), SIGNAL(triggered()), this, SLOT(closeTriggered()));
 #endif
     connect(mCloseAction.get(), SIGNAL(triggered()), this, SLOT(closeTriggered()));
 }
