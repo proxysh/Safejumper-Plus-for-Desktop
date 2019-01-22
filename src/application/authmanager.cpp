@@ -1463,7 +1463,8 @@ ServersModel *AuthManager::serversModel() const
 
 int AuthManager::favoritesCount()
 {
-    return mServersModel->favoriteServers().count();
+    return Setting::instance()->showNodes() ? mServersModel->favoriteServers().count()
+                                            : mHubsModel->favoriteServers().count();
 }
 
 ServersModel *AuthManager::hubsModel() const
