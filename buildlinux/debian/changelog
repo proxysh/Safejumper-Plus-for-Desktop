@@ -1,6 +1,6 @@
-safejumper (2018.12.11.0) unstable; urgency=medium
+safejumper (2019.01.21.0) unstable; urgency=medium
 
   * Updated packaging to qml gui for version 5.0 build 100
 
- -- Jeremy Whiting <info@3monkeysinternational.com>  Tue, 11 Dec 2018 21:41:00 -0600
+ -- Jeremy Whiting <info@3monkeysinternational.com>  Mon, 21 Jan 2019 21:41:00 -0600
 

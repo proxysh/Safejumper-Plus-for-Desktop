@@ -16,7 +16,7 @@ Name:           safejumper
 Summary:        VPN client for Safejumper network.
 License:        GPL-2.0 and GPL-3.0
 Group:          Productivity/Networking/Web/Utilities
-Version:        2018.12.11
+Version:        2019.01.21
 Release:        0
 Url:            http://proxy.sh
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
