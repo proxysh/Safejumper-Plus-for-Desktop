@@ -9,5 +9,4 @@ openvpn /opt/safejumper
 safejumper.desktop /usr/share/applications
 icons/16x16/apps/safejumper.png /usr/share/icons/hicolor/16x16/apps
 icons/32x32/apps/safejumper.png /usr/share/icons/hicolor/32x32/apps
-icons/48x48/apps/safejumper.png /usr/share/icons/hicolor/48x48/apps
 icons/64x64/apps/safejumper.png /usr/share/icons/hicolor/64x64/apps
