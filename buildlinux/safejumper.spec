@@ -49,7 +49,6 @@ mkdir -p $RPM_BUILD_ROOT/opt/safejumper/
 mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
 mkdir -p $RPM_BUILD_ROOT/usr/share/icons/hicolor/16x16/apps
 mkdir -p $RPM_BUILD_ROOT/usr/share/icons/hicolor/32x32/apps
-mkdir -p $RPM_BUILD_ROOT/usr/share/icons/hicolor/48x48/apps
 mkdir -p $RPM_BUILD_ROOT/usr/share/icons/hicolor/64x64/apps
 mkdir -p $RPM_BUILD_ROOT/usr/lib/systemd/system/
 install -m 0755 safejumper                 $RPM_BUILD_ROOT/opt/safejumper/safejumper
@@ -64,7 +63,6 @@ install -m 0755 safejumper.desktop         $RPM_BUILD_ROOT/usr/share/application
 install -m 0644 safejumper.service         $RPM_BUILD_ROOT/usr/lib/systemd/system/safejumper.service
 install -m 0744 icons/16x16/apps/safejumper.png     $RPM_BUILD_ROOT/usr/share/icons/hicolor/16x16/apps
 install -m 0744 icons/32x32/apps/safejumper.png     $RPM_BUILD_ROOT/usr/share/icons/hicolor/32x32/apps
-install -m 0744 icons/48x48/apps/safejumper.png   $RPM_BUILD_ROOT/usr/share/icons/hicolor/48x48/apps
 install -m 0744 icons/64x64/apps/safejumper.png     $RPM_BUILD_ROOT/usr/share/icons/hicolor/64x64/apps
 
 %pre
@@ -99,7 +97,6 @@ rm -rf $RPM_BUILD_ROOT
 /usr/share/applications/safejumper.desktop
 /usr/share/icons/hicolor/16x16/apps/safejumper.png
 /usr/share/icons/hicolor/32x32/apps/safejumper.png
-/usr/share/icons/hicolor/48x48/apps/safejumper.png
 /usr/share/icons/hicolor/64x64/apps/safejumper.png
 /usr/lib/systemd/system/safejumper.service
 
