@@ -32,6 +32,7 @@
 #include <QDomDocument>
 #include <QDir>
 #include <QSvgRenderer>
+#include <QtGlobal>
 
 //In future, we’ll add things such as “OpenVPN with XOR TCP 448” or “OpenVPN with TOR UDP 4044”.
 
@@ -90,6 +91,7 @@ Setting::Setting()
     isoCodes << "IT";
     isoCodes << "JP";
     isoCodes << "KG";
+    isoCodes << "KR";
     isoCodes << "LV";
     isoCodes << "LI";
     isoCodes << "LT";
@@ -108,6 +110,7 @@ Setting::Setting()
     isoCodes << "RS";
     isoCodes << "SG";
     isoCodes << "SI";
+    isoCodes << "SK";
     isoCodes << "ZA";
     isoCodes << "ES";
     isoCodes << "SE";
@@ -117,6 +120,7 @@ Setting::Setting()
     isoCodes << "TR";
     isoCodes << "US";
     isoCodes << "UA";
+    isoCodes << "VN";
 
     // Iterate over countries calculating x and y position to use for each to be centered
     for(const QString &iso : isoCodes) {
@@ -128,7 +132,7 @@ Setting::Setting()
             qDebug() << "Center x,y are " << bounds.center().x() << bounds.center().y();
             QPointF center = bounds.center();
             // Subtract half of screen width and screen height to put bounding rect in center
-            mCornerByCountry.insert(iso, QPointF(center.x() - 187, center.y() - 300));
+            mCornerByCountry.insert(iso, QPointF(center.x() - 187, qMax<int>(center.y() - 300, 0)));
         }
     }
 

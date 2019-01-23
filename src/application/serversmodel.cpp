@@ -127,6 +127,8 @@ void ServersModel::appendServers(const QJsonArray &servers)
         newServer->setName(serverObject.value("name").toString());
         newServer->setAddress(serverObject.value("hostname").toString());
         newServer->setISO(serverObject.value("iso_code").toString());
+        if (newServer->iso() == "XK")
+            newServer->setISO("RS");
         QJsonValue serverPorts = serverObject.value("ports");
         QJsonValue tcpPorts = serverPorts.toObject().value("tcp");
         QJsonValue udpPorts = serverPorts.toObject().value("udp");

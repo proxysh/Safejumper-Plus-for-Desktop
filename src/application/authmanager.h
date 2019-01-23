@@ -99,7 +99,7 @@ public:
     const std::vector<std::pair<bool, int> > & getLevel0();		// <is hub, hub id / srv id>
     const std::vector<int> & getLevel1(size_t hub);					// for given hub id all the server ids, including hub entry itself
 
-    AServer *getServer(int id);	 // on -1 returns nullptr
+    AServer *getServer(int id, bool forceServer = false);	 // on -1 returns nullptr
     int hubIdFromServerId(int ixsrv);			   // -1 if ixsrv not a hub
     int serverIxFromName(const QString & srv);		 // -1 if not found
     AServer *getHub(int id);

@@ -425,7 +425,7 @@ void TrayIconManager::constructConnectToMenu()
                     if (L0[k].first) {
                         // hub - add submenu
                         int idhub = L0[k].second;
-                        AServer *h = am->getServer(idhub);
+                        AServer *h = am->getServer(idhub, true);
                         QMenu * m = new QMenu(h->name());
                         mHubMenus.push_back(m);
 
@@ -434,7 +434,7 @@ void TrayIconManager::constructConnectToMenu()
                         for (size_t k = 0; k < L1.size(); ++k) {
                             int idsrv = L1[k];
                             if (idsrv > -1) {
-                                AServer *se = am->getServer(idsrv);
+                                AServer *se = am->getServer(idsrv, true);
                                 createMenuItem(m, se->name(), idsrv);
                             }
                         }

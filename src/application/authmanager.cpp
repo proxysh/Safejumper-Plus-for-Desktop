@@ -208,11 +208,11 @@ const QString &AuthManager::oldIP()
     return mOldIP;
 }
 
-AServer *AuthManager::getServer(int id)
+AServer *AuthManager::getServer(int id, bool forceServer)
 {
     AServer *s = nullptr;
     //assert(id > -1);
-    if (Setting::instance()->showNodes()) {
+    if (Setting::instance()->showNodes() || forceServer) {
         if (id > -1 && id < mServersModel->count()) {
             s = mServersModel->server(id);
         } else {
