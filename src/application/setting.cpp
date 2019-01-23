@@ -133,6 +133,11 @@ Setting::Setting()
             QPointF center = bounds.center();
             // Subtract half of screen width and screen height to put bounding rect in center
             mCornerByCountry.insert(iso, QPointF(center.x() - 187, qMax<int>(center.y() - 300, 0)));
+
+            if (iso == "GB") {
+                // Use gb coordinates for isle of man
+                mCornerByCountry.insert("IM", QPointF(center.x() - 187, qMax<int>(center.y() - 300, 0)));
+            }
         }
     }
 
