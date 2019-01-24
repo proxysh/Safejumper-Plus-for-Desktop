@@ -227,7 +227,7 @@ void VPNServiceManager::sendConnectToVPNRequest()
 
         Log::logt("Sending command 'connectToVPN'");
 
-        QString currentServerAddress = AuthManager::instance()->getServer(Setting::instance()->serverID())->address();
+        QString currentServerAddress = AuthManager::instance()->getServer(Setting::instance()->serverID(), true)->address();
         int encryption = Setting::instance()->serverEncryption(currentServerAddress);
         int protocol = Setting::instance()->serverProtocol(currentServerAddress, encryption);
 
@@ -331,7 +331,7 @@ void VPNServiceManager::socket_readyRead()
 
 //            Log::logt(QString("Got state change to %1").arg(vpnStateWord((vpnState)state)));
 
-            mState = (vpnState)state;
+            mState = static_cast<vpnState>(state);
             // Now that we are connected, stop port loop
             if (mState == vpnStateConnected)
                 mInPortLoop = false;
@@ -347,7 +347,7 @@ void VPNServiceManager::socket_readyRead()
             qint32 state = jsonObj.value("state").toInt();
             qDebug() << "Got state word change to word " << state;
 //            Log::logt(QString("Got status word change to %1").arg(vpnStateWord((vpnState)state)));
-            emit stateWord((OpenVPNStateWord)state);
+            emit stateWord(static_cast<OpenVPNStateWord>(state));
         }
         break;
 
@@ -376,6 +376,7 @@ void VPNServiceManager::socket_readyRead()
             qDebug() << "Got error notification from service " << message;
             emit error(message);
         }
+            break;
 
         default:
             break;

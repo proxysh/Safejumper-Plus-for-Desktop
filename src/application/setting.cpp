@@ -866,7 +866,7 @@ int Setting::currentProtocol()
 
 void Setting::setServer(int ixsrv)
 {
-    AServer *se = AuthManager::instance()->getServer(ixsrv);
+    AServer *se = AuthManager::instance()->getServer(ixsrv, true);
     QString newsrv = se->name();
     mSettings.setValue(LocationSettingsName(), ixsrv);
     mSettings.setValue(LocationSettingsStrName(), newsrv);

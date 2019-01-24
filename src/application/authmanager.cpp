@@ -64,7 +64,6 @@ void AuthManager::cleanup()
 AuthManager::AuthManager()
     :mLoggedIn(false),
      mCancellingLogin(false),
-     mSeeded(false),
      mIPAttemptCount(0),
      mServersModel(new ServersModel(this)),
      mHubsModel(new ServersModel(this))
@@ -155,6 +154,7 @@ void AuthManager::logout()
 
 void AuthManager::createAccount(const QString &email, const QString &name, const QString &password)
 {
+    Q_UNUSED(name)
     // Create account with given e-mail, name, and password of type free with
     // expiration 1 year in the future. Send message to gui when complete
     QUrlQuery postData;
@@ -417,18 +417,8 @@ const QList<int> AuthManager::currentEncryptionServers()
 
 const QList<int> AuthManager::currentEncryptionHubs()
 {
-    QList<int> servers = currentEncryptionServers();
-
-    QList<int> hubs;
-
-    // Now get the hub ids from these
-    Q_FOREACH(int i, servers) {
-        if (mServersModel->server(i)->name().contains("Hub")) {
-            hubs << i;
-        }
-    }
-
-    return hubs;
+    int enc = Setting::instance()->encryption();
+    return mHubsModel->serversForEncryption(enc);
 }
 
 int AuthManager::hubidForServerNode(int srv)
@@ -496,7 +486,7 @@ void AuthManager::prepareLevels()
     }
 }
 
-const std::vector<int> & AuthManager::getLevel1(size_t hub)
+const std::vector<int> & AuthManager::getLevel1(int hub)
 {
     prepareLevels();
     std::map<int, std::vector<int> >::iterator it = mLevel1.find(hub);
@@ -506,22 +496,11 @@ const std::vector<int> & AuthManager::getLevel1(size_t hub)
         return (*it).second;
 }
 
-int AuthManager::hubIdFromServerId(int ixsrv)
-{
-    int hub = -1;
-    if (ixsrv > -1) {
-        IIMap::const_iterator ci = mServerIdToHubId.find(ixsrv);
-        if (ci != mServerIdToHubId.end())
-            hub = (*ci).second;
-    }
-    return hub;
-}
-
 int AuthManager::serverIxFromName(const QString & srv)
 {
     int ix = -1;
     if (mServerNameToId.empty() && mServersModel->count() > 0) {
-        for (size_t k = 0, sz = mServersModel->count(); k < sz; ++k)
+        for (int k = 0, sz = mServersModel->count(); k < sz; ++k)
             mServerNameToId.insert(SIMap::value_type(mServersModel->server(k)->name().toStdString(), k));
     }
     SIMap::iterator it = mServerNameToId.find(srv.toStdString());
@@ -543,7 +522,6 @@ void AuthManager::clearServerLists()
     mLevel0.clear();
     mLevel1.clear();
     mHubToServer.clear();
-    mServerIdToHubId.clear();
     mServerNameToId.clear();
 }
 
@@ -1261,15 +1239,7 @@ void AuthManager::pingTerminated(size_t idWaiter)
     startWorker(idWaiter);
 }
 
-void AuthManager::seed()
-{
-    if (!mSeeded) {
-        srand(time(nullptr));
-        mSeeded = true;
-    }
-}
-
-std::vector<int> AuthManager::getPings(const std::vector<size_t> & toping)
+std::vector<int> AuthManager::getPings(const std::vector<int> & toping)
 {
     std::vector<int> v;
     v.assign(toping.size(), -1);
@@ -1306,7 +1276,7 @@ int AuthManager::getServerToJump()
     int srv = -1;
     int prev = Setting::instance()->serverID();
     Log::logt("Previous server is " + QString::number(prev));
-    std::vector<size_t> toping;     // ix inside mServers
+    std::vector<int> toping;     // ix inside mServers
     int enc = Setting::instance()->encryption();
     if (Setting::instance()->showNodes()) {
         Log::logt("showNodes is set, so getting pings of all servers");
@@ -1346,7 +1316,7 @@ int AuthManager::getServerToJump()
         unsigned int num = Setting::instance()->showNodes() ? 20 : 6;      // pick this many from the top
         if (num >= ping_ix.size())
             num = ping_ix.size();
-        int offset = rand() % num;
+        unsigned int offset = rand() % num;
         srv = ping_ix.at(offset).second;
     }
 
@@ -1381,17 +1351,6 @@ void AuthManager::jump()
         Setting::instance()->setServer(srv);
         VPNServiceManager::instance()->sendConnectToVPNRequest();               // contains stop
     }
-}
-
-uint64_t AuthManager::getRandom64()
-{
-    seed();
-    uint64_t v = 0
-                 | ((uint64_t)rand() << 49)
-                 | ((uint64_t)rand() << 34)
-                 | ((uint64_t)rand() << 19)
-                 | ((uint64_t)rand() & 0xf);
-    return v;
 }
 
 void AuthManager::processOldIP()
@@ -1492,16 +1451,16 @@ void AuthManager::loginFinished()
 
 void AuthManager::createAccountError(QNetworkReply::NetworkError error)
 {
-
+    Q_UNUSED(error)
 }
 
 void AuthManager::createAccountFinished()
 {
-
 }
 
 void AuthManager::fetchServerListError(QNetworkReply::NetworkError error)
 {
+    Q_UNUSED(error)
     Log::logt("Error fetching server list, retrying in 5 seconds");
     QTimer::singleShot(5000, this, &AuthManager::getServerList);
 }
@@ -1559,6 +1518,7 @@ void AuthManager::fetchServerListFinished()
 
 void AuthManager::fetchHubsError(QNetworkReply::NetworkError error)
 {
+    Q_UNUSED(error)
     Log::logt("Error fetching hub list, retrying in 5 seconds");
     QTimer::singleShot(5000, this, &AuthManager::getHubs);
 }

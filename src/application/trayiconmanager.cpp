@@ -68,7 +68,7 @@ TrayIconManager::TrayIconManager(QWidget *parent)
 
 bool TrayIconManager::exists()
 {
-    return (mInstance.get() != NULL);
+    return (mInstance.get() != nullptr);
 }
 
 void TrayIconManager::disableActionsOnLogout()
@@ -246,14 +246,16 @@ void TrayIconManager::refreshStateIcon()
         vpnState state = VPNServiceManager::instance()->state();
         QString iconName;
         switch(state) {
-        case vpnStateDisconnected:
-            iconName = disconnectedIcon();
-            break;
         case vpnStateConnecting:
             iconName = connectingIcon();
             break;
         case vpnStateConnected:
             iconName = connectedIcon();
+            break;
+        case vpnStateDisconnected:
+        case vpnStateTotal:
+            iconName = disconnectedIcon();
+            break;
         }
         QIcon icon(iconName);
         mTrayIcon->setIcon(icon);
@@ -309,7 +311,7 @@ void TrayIconManager::connectToTriggered()
     if (action != nullptr) {
         // Get the action's server id
         if (AuthManager::instance()->loggedIn()) {
-            size_t serverId = action->data().toInt();
+            int serverId = action->data().toInt();
 
             Setting::instance()->setServer(serverId);
             VPNServiceManager::instance()->sendConnectToVPNRequest();
@@ -377,7 +379,7 @@ void TrayIconManager::cleanup()
     std::auto_ptr<TrayIconManager> d(mInstance.release());
 }
 
-void TrayIconManager::createMenuItem(QMenu * m, const QString & name, size_t srv)
+void TrayIconManager::createMenuItem(QMenu * m, const QString & name, int srv)
 {
     QAction * a = m->addAction(name);
     a->setData(QVariant(int(srv)));
@@ -402,7 +404,7 @@ void TrayIconManager::constructConnectToMenu()
                 mTrayIconMenu->removeAction(mConnectToAction.get());
                 mTrayIconMenu->insertMenu(mDisconnectAction.get(), mConnectToMenu.get());
             }
-            if (Setting::instance()->showNodes() || Setting::instance()->encryption() >= ENCRYPTION_ECC) {
+            if (Setting::instance()->showNodes()) {
                 // Use list of servers instead of hubs for ECC and ECC_XOR
                 const QList<int> &servers = am->currentEncryptionServers();
                 qDebug() << "current encryption servers list has size " << servers.size();
@@ -411,39 +413,13 @@ void TrayIconManager::constructConnectToMenu()
                     createMenuItem(mConnectToMenu.get(), server->name(), servers.at(k));
                 }
             } else {
-                // ShowAllNodes is disabled, so only show hubs with servers underneath
-//                const QList<int> & hubs = am->currentEncryptionHubs();
-                //_ct_menu->setIcon(QIcon(":/icons-tm/connect-red.png"));
-
+                // ShowAllNodes is disabled, so only show hubs
+                const QList<int> & hubs = am->currentEncryptionHubs();
                 qDebug() << "Show all nodes is off, so adding hubs to menu";
 
-                const std::vector<std::pair<bool, int> > & L0 = am->getLevel0();
-
-                qDebug() << "level 0 has " << L0.size();
-
-                for (size_t k = 0; k < L0.size(); ++k) {
-                    if (L0[k].first) {
-                        // hub - add submenu
-                        int idhub = L0[k].second;
-                        AServer *h = am->getServer(idhub, true);
-                        QMenu * m = new QMenu(h->name());
-                        mHubMenus.push_back(m);
-
-                        // add into it all individual servers
-                        const std::vector<int> & L1 = am->getLevel1(idhub);
-                        for (size_t k = 0; k < L1.size(); ++k) {
-                            int idsrv = L1[k];
-                            if (idsrv > -1) {
-                                AServer *se = am->getServer(idsrv, true);
-                                createMenuItem(m, se->name(), idsrv);
-                            }
-                        }
-                        mConnectToMenu->addMenu(m);
-                    } else {	// just a server without hub
-                        int idsrv = L0[k].second;
-                        AServer *se = am->getServer(idsrv);
-                        createMenuItem(mConnectToMenu.get(), se->name(), idsrv);
-                    }
+                for (int k = 0; k < hubs.size(); ++k) {
+                    AServer *server = am->getHub(hubs.at(k));
+                    createMenuItem(mConnectToMenu.get(), server->name(), hubs.at(k));
                 }
             }
             mConnectToMenu->setEnabled(true);

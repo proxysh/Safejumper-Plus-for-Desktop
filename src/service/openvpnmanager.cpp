@@ -31,9 +31,9 @@
 #include "servicepathhelper.h"
 
 #ifdef Q_OS_WIN
-#include <winsock2.h>
-#include <windows.h>
-#include <Iphlpapi.h>
+#include <WinSock2.h>
+#include <Windows.h>
+#include <iphlpapi.h>
 #pragma comment(lib, "Advapi32.lib")
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "Iphlpapi.lib")
@@ -66,13 +66,13 @@ OpenvpnManager::~OpenvpnManager()
 
 void OpenvpnManager::cleanup()
 {
-    if (mInstance.get() != NULL)
+    if (mInstance.get() != nullptr)
         delete mInstance.release();
 }
 
 bool OpenvpnManager::exists()
 {
-    return (mInstance.get() != NULL);
+    return (mInstance.get() != nullptr);
 }
 
 void OpenvpnManager::setTesting(bool testing)
@@ -203,10 +203,6 @@ void OpenvpnManager::processStarted()
 
 bool OpenvpnManager::writeConfigFile()
 {
-    bool obfs = (mEncryption == ENCRYPTION_TOR_OBFS2
-                 || mEncryption == ENCRYPTION_TOR_OBFS3
-                 || mEncryption == ENCRYPTION_TOR_SCRAMBLESUIT
-                );
     QFile ff(ServicePathHelper::Instance()->openvpnConfigFilename());
     if (!ff.open(QIODevice::WriteOnly)) {
         QString se = "Cannot write config file '" + ServicePathHelper::Instance()->openvpnConfigFilename() + "'";
@@ -222,14 +218,6 @@ bool OpenvpnManager::writeConfigFile()
     if (!mDNS2.isEmpty()) {
         ff.write(QString("dhcp-option DNS %1\n").arg(mDNS2).toUtf8());
     }
-
-//    if (obfs) {
-//// TODO: -0 OS
-//        ff.write("socks-proxy 127.0.0.1 1050\n");
-//        ff.write("route ");
-//        ff.write(mHostname.toLatin1());
-//        ff.write(" 255.255.255.255 net_gateway\n");
-//    }
 
     ff.flush();
     ff.close();
@@ -310,7 +298,7 @@ QStringList OpenvpnManager::getOpenvpnArgs()
 
 void OpenvpnManager::startTimer()
 {
-    if (mStateTimer != NULL)
+    if (mStateTimer != nullptr)
         mStateTimer->stop();
     delete mStateTimer;
     mStateTimer = new QTimer(this);
@@ -322,7 +310,7 @@ void OpenvpnManager::checkState()
 {
     Log::serviceLog("checkState called");
     if (openvpnRunning()) {
-        if (mSocket.get() == NULL) {
+        if (mSocket.get() == nullptr) {
             connectToOpenvpnSocket();
         } else if (mSocket->isValid() &&
                    mSocket->state() == QAbstractSocket::ConnectedState) {
@@ -340,7 +328,7 @@ void OpenvpnManager::checkState()
     }
 
     if (state() == vpnStateConnecting) {
-        uint d = mStartDateTime.secsTo(QDateTime::currentDateTimeUtc());
+        long long d = mStartDateTime.secsTo(QDateTime::currentDateTimeUtc());
         if (mTesting) {
             if (d > kTryNextPortSeconds) {
                 cancel(QString("Timeout at %1 seconds").arg(kTryNextPortSeconds));
@@ -424,10 +412,10 @@ void OpenvpnManager::setState(vpnState st)
             break;
         }
         case vpnStateDisconnected: {
-            if (mStateTimer != NULL) {
+            if (mStateTimer != nullptr) {
                 mStateTimer->stop();
                 delete mStateTimer;
-                mStateTimer = NULL;
+                mStateTimer = nullptr;
             }
             emit stateChanged(vpnStateDisconnected);
             break;
@@ -502,7 +490,7 @@ void OpenvpnManager::cancel(const QString & msg)
 void OpenvpnManager::stop()
 {
     if (openvpnRunning()) {
-        if (mSocket.get() != NULL) {
+        if (mSocket.get() != nullptr) {
             if (mSocket->isOpen() && mSocket->isValid()) {
                 if (mSocket->state() != QAbstractSocket::ConnectedState) {
                     Log::serviceLog("Cannot send signal SIGTERM due to disconnected socket");
@@ -530,12 +518,12 @@ void OpenvpnManager::stop()
     }
 
     // This could be the case if openvpn stopped but the socket is still open
-    if (mSocket.get() != NULL)
+    if (mSocket.get() != nullptr)
         disconnectFromOpenvpnSocket();
 
     stopObfsproxy();
 
-    if (mFileSystemWatcher.get() != NULL) {       // OpenVPN log file watcher
+    if (mFileSystemWatcher.get() != nullptr) {       // OpenVPN log file watcher
         mFileSystemWatcher->removePath(ServicePathHelper::Instance()->openvpnLogFilename());
         delete mFileSystemWatcher.release();
     }
@@ -545,7 +533,7 @@ void OpenvpnManager::stop()
 
 void OpenvpnManager::removeProcess()
 {
-    if (mProcess.get() != NULL) {
+    if (mProcess.get() != nullptr) {
         QProcess * t = mProcess.release();
         t->deleteLater();
     }
@@ -563,6 +551,7 @@ void OpenvpnManager::logStdout()
 
 void OpenvpnManager::getOvpnError(QNetworkReply::NetworkError error)
 {
+    Q_UNUSED(error)
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
     emit sendError("Unable to fetch configuration from " + reply->url().toString());
     stop();
@@ -706,7 +695,7 @@ void OpenvpnManager::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
 void OpenvpnManager::setupFileWatcher()
 {
-    if (mFileSystemWatcher.get() == NULL) {
+    if (mFileSystemWatcher.get() == nullptr) {
         QFile f(ServicePathHelper::Instance()->openvpnLogFilename());
         if (f.exists()) {
             mLogFilePosition = 0;       // OpenVpn will truncate
@@ -723,7 +712,7 @@ void OpenvpnManager::setupFileWatcher()
 
 void OpenvpnManager::disconnectFromOpenvpnSocket()
 {
-    if (mSocket.get() != NULL) {
+    if (mSocket.get() != nullptr) {
         Log::serviceLog("disconnecting from openvpn management socket");
 
         disconnect(mSocket.get(), SIGNAL(error(QAbstractSocket::SocketError)),
@@ -761,7 +750,7 @@ void OpenvpnManager::socketError(QAbstractSocket::SocketError error)
     }
 
     Log::serviceLog("Error connecting to OpenVPN management socket" + QString::number(error));
-    if (NULL != mSocket.get())
+    if (nullptr != mSocket.get())
         mSocket.release()->deleteLater();
 }
 
@@ -982,12 +971,12 @@ bool OpenvpnManager::openvpnRunning()
 {
     bool running = false;
 
-    running = mProcess.get() != NULL &&
+    running = mProcess.get() != nullptr &&
               (mProcess->state() == QProcess::Running ||
                mProcess->state() == QProcess::Starting);
 
     if (!running)
-        running = mSocket.get() != NULL && mSocket->isOpen();
+        running = mSocket.get() != nullptr && mSocket->isOpen();
 
 //  if (!is)        // lookup child
     {
@@ -1097,17 +1086,17 @@ void OpenvpnManager::netDown(bool down)
                    | GAA_FLAG_INCLUDE_PREFIX
                    | GAA_FLAG_INCLUDE_ALL_INTERFACES
                    ;
-        ULONG r = GetAdaptersAddresses(0, fl, 0, NULL, &sz);
+        ULONG r = GetAdaptersAddresses(0, fl, nullptr, nullptr, &sz);
         if (ERROR_BUFFER_OVERFLOW != r)
             return;
         std::vector<byte> v;
         v.assign(sz, 0);
         IP_ADAPTER_ADDRESSES * p = reinterpret_cast<PIP_ADAPTER_ADDRESSES>(&v[0]);
-        r = GetAdaptersAddresses(0, fl, 0, p, &sz);
+        r = GetAdaptersAddresses(0, fl, nullptr, p, &sz);
         if (NO_ERROR != r) {
             Log::serviceLog("Cannot enumerate adapters, error code: " + QString::number(r));
         } else {
-            for (int k = 0; p != NULL && k < v.size(); p = p->Next, ++k) {
+            for (unsigned int k = 0; p != nullptr && k < v.size(); p = p->Next, ++k) {
                 QString s = QString::fromWCharArray(p->Description);
                 if (s.indexOf("TAP-Windows") > -1) continue;
                 if (s.indexOf("WAN Miniport") > -1) continue;
@@ -1126,7 +1115,7 @@ void OpenvpnManager::netDown(bool down)
                     else
                         wa = L"interface set interface name=\"" + std::wstring(p->FriendlyName) + L"\" admin=enable";
                     Log::serviceLog("ShellExecute '" + QString::fromStdWString(prog) + "' , Args: '" + QString::fromStdWString(wa) + "'");
-                    HINSTANCE hi = ShellExecute(NULL, NULL, prog.c_str(), (LPWSTR)wa.c_str(), NULL, SW_HIDE);	// already admin
+                    HINSTANCE hi = ShellExecute(nullptr, nullptr, prog.c_str(), (LPWSTR)wa.c_str(), nullptr, SW_HIDE);	// already admin
                     if ((int)hi <= 32)
                         Log::serviceLog("Cannot ShellExecute hi = " + QString::number((int)hi) + " err code = " + QString::number(GetLastError()));
                     else {
@@ -1473,7 +1462,7 @@ void OpenvpnManager::setIPv6(bool enable)
             DWORD old = 0;
             DWORD val = 0;
             DWORD sz = sizeof(val);
-            lRes = ::RegQueryValueExW(hKey, gs_regname, 0, NULL, reinterpret_cast<LPBYTE>(&val), &sz);
+            lRes = ::RegQueryValueExW(hKey, gs_regname, nullptr, nullptr, reinterpret_cast<LPBYTE>(&val), &sz);
             if (ERROR_SUCCESS == lRes)
                 old = val;
             if (enable)
@@ -1549,7 +1538,7 @@ bool OpenvpnManager::IPv6()
             RegRaii ra(hKey);
             DWORD val;
             DWORD sz = sizeof(val);
-            lRes = ::RegQueryValueExW(hKey, gs_regname, 0, NULL, reinterpret_cast<LPBYTE>(&val), &sz);
+            lRes = ::RegQueryValueExW(hKey, gs_regname, nullptr, nullptr, reinterpret_cast<LPBYTE>(&val), &sz);
             if (lRes != ERROR_FILE_NOT_FOUND) {
                 if (lRes == ERROR_SUCCESS) {
                     if ( (val & 0xFF) == 0xFF)	// 0x01 to disable IPv6 on all tunnel interfaces https://support.microsoft.com/en-us/kb/929852
@@ -1613,17 +1602,17 @@ void OpenvpnManager::enableTap()
     std::vector<byte> v;
     v.assign(sz, 0);
     IP_ADAPTER_ADDRESSES * p = reinterpret_cast<PIP_ADAPTER_ADDRESSES>(&v[0]);
-    r = GetAdaptersAddresses(0, fl, 0, p, &sz);
+    r = GetAdaptersAddresses(0, fl, nullptr, p, &sz);
     if (NO_ERROR != r) {
         Log::serviceLog("Cannot enumerate adapters, error code: " + QString::number(r));
     } else {
-        for (; p != NULL; p = p->Next) {
+        for (; p != nullptr; p = p->Next) {
             QString s = QString::fromWCharArray(p->Description);
             if (s.indexOf("TAP-Windows") > -1) {
                 std::wstring prog = L"netsh";
                 std::wstring wa = L"interface set interface name=\"" + std::wstring(p->FriendlyName) + L"\" admin=enabled";
                 Log::serviceLog("ShellExecute '" + QString::fromStdWString(prog) + "' , Args: '" + QString::fromStdWString(wa) + "'");
-                HINSTANCE hi = ShellExecute(NULL, NULL, prog.c_str(), (LPWSTR)wa.c_str(), NULL, SW_HIDE);	// already admin
+                HINSTANCE hi = ShellExecute(nullptr, nullptr, prog.c_str(), (LPWSTR)wa.c_str(), nullptr, SW_HIDE);	// already admin
                 if ((int)hi <= 32)
                     Log::serviceLog("Cannot ShellExecute hi = " + QString::number((int)hi) + " err code = " + QString::number(GetLastError()));
                 else

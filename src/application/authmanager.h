@@ -97,18 +97,15 @@ public:
     const QList<int> currentEncryptionHubs();					// return IDs of habs inside _servers
 
     const std::vector<std::pair<bool, int> > & getLevel0();		// <is hub, hub id / srv id>
-    const std::vector<int> & getLevel1(size_t hub);					// for given hub id all the server ids, including hub entry itself
+    const std::vector<int> & getLevel1(int hub);					// for given hub id all the server ids, including hub entry itself
 
     AServer *getServer(int id, bool forceServer = false);	 // on -1 returns nullptr
-    int hubIdFromServerId(int ixsrv);			   // -1 if ixsrv not a hub
     int serverIxFromName(const QString & srv);		 // -1 if not found
     AServer *getHub(int id);
 
     int pingFromServerIx(int srv);
 
     void jump();
-
-    uint64_t getRandom64();
 
     Q_INVOKABLE void checkForUpdates();		// use own reply; can download in parallel with others; executed by main window at start regardless other actions
     void getOldIP();
@@ -209,17 +206,14 @@ private:
     static std::auto_ptr<AuthManager> mInstance;
 
     void clearServerLists();
-    bool mSeeded;
-    void seed();
 
     std::vector<std::pair<bool, int> > mLevel0;		// <is hub, hub id / srv id>
     std::map<int, std::vector<int> > mLevel1;		// <hub id, <srv ids, including srv id of hub entry> >
     std::vector<int> mFake;
     void prepareLevels();
     int hubidForServerNode(int srv);					// -1 if cannot find hub for this srv
-    QMap<QString, size_t> mHubClearedId;	//QMap<QString, size_t> _HubClearedId;		// <hub cleared name (w/o ' Hub'), its hub id>
+    QMap<QString, int> mHubClearedId;	//QMap<QString, size_t> _HubClearedId;		// <hub cleared name (w/o ' Hub'), its hub id>
     std::vector<size_t> mHubToServer;	   // id of hub inside _servers
-    IIMap mServerIdToHubId;
     SIMap mServerNameToId;
 
     QString mAccountLogin;
@@ -243,9 +237,9 @@ private:
     void clearReply();
     QPointer<QNetworkReply> mUpdateReply;
 
-    std::vector<int> getPings(const std::vector<size_t> & toping);	// from _pings; do not wait for pings; return vec of the same size
-    std::queue<size_t> mToPing;				// id inside _servers
-    std::queue<size_t> mHubToPing;
+    std::vector<int> getPings(const std::vector<int> &toping);	// from _pings; do not wait for pings; return vec of the same size
+    std::queue<int> mToPing;				// id inside _servers
+    std::queue<int> mHubToPing;
     bool mPingsLoaded;
 
     std::vector<QProcess *> mWorkers;		// 3 vectors of the same size WORKERS_NUM

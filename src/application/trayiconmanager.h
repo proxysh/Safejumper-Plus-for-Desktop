@@ -86,7 +86,7 @@ private:
     void createMenuActions();
     void createTrayIcon();
     void clearConnectToMenu();
-    void createMenuItem(QMenu * m, const QString & name, size_t srv);
+    void createMenuItem(QMenu * m, const QString & name, int srv);
 
 #ifdef Q_OS_DARWIN
     bool isDark() const;

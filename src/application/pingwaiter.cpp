@@ -29,6 +29,8 @@ PingWaiter::~PingWaiter()
 
 void PingWaiter::PingFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    Q_UNUSED(exitCode)
+    Q_UNUSED(exitStatus)
     AuthManager::instance()->pingComplete(_idWaiter);
 }
 
