@@ -248,7 +248,8 @@ Item {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        settings.server = settings.favorite
+                        settings.server = settings.favorite;
+                        screen.connectToVPN();
                     }
                 }
             }
