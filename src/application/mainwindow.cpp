@@ -114,7 +114,8 @@ MainWindow::MainWindow() :
             this, &MainWindow::messageReceived);
 #endif
 
-    if (Setting::instance()->autoconnect())
+    if (Setting::instance()->autoconnect() && !Setting::instance()->login().isEmpty()
+            && !Setting::instance()->password().isEmpty())
         AuthManager::instance()->login(Setting::instance()->login(), Setting::instance()->password());
     else
         AuthManager::instance()->getDefaultServerList();

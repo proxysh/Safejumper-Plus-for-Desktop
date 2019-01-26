@@ -1390,8 +1390,8 @@ void AuthManager::loginFinished()
         VPNServiceManager::instance()->sendCredentials();
         emit loggedInChanged();
     } else {
-        if (Setting::instance()->autoconnect())
-            getDefaultServerList();
+        // Login failed, so get default server list instead
+        getDefaultServerList();
         emit loginError(message);
     }
 }
