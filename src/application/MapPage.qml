@@ -41,11 +41,20 @@ Item {
         favoriteServer = serversModel.server(settings.favorite)
         var iso = favoriteServer.iso
         currentServerCard.currentServer = currentServer;
+        if (!background2.source)
+            background2.source = background.source;
+        background2.x = background.x
+        background2.y = background.y
+        background2.opacity = 1
+
+        background.opacity = 0
         background.source = settings.mapData() // "../maps/" + iso + vpnservicemanager.stateMapSuffix
         background.x = -settings.mapXOffset()
         background.y = -settings.mapYOffset()
         leftButton.opacity = authmanager.hasPreviousFavorite() ? 1.0 : 0.0
         rightButton.opacity = authmanager.hasNextFavorite() ? 1.0 : 0.0
+        mapFadeOutAnimation.start();
+        mapFadeInAnimation.start();
     }
 
     function stateChanged()
@@ -103,6 +112,34 @@ Item {
     }
 
     Image {
+        id: background2
+        z: -1
+        x: -settings.mapXOffset()
+        y: -settings.mapYOffset()
+        width: 2200
+        height: 2001
+        fillMode: IMage.PreserveAspectCrop
+        sourceSize.width: 2200
+        sourceSize.height: 2001
+        verticalAlignment: Qt.AlignTop
+        horizontalAlignment: Qt.AlignLeft
+        clip: true
+
+        PropertyAnimation {
+            id: mapFadeOutAnimation;
+            target: background2
+            property: "opacity"
+            from: 1
+            to: 0
+            duration: 500
+
+            onStopped: {
+                background2.source = background.source
+            }
+        }
+    }
+
+    Image {
         id: background
         z: -1
         x: -settings.mapXOffset()
@@ -111,11 +148,20 @@ Item {
         height: 2001
         fillMode: Image.PreserveAspectCrop
         source: settings.mapData() // "../maps/" + allserversmodel.server(settings.favorite).iso + vpnservicemanager.stateMapSuffix
-        sourceSize.width: 2000
-        sourceSize.height: 1001
+        sourceSize.width: 2200
+        sourceSize.height: 2001
         verticalAlignment: Qt.AlignTop
         horizontalAlignment: Qt.AlignLeft
         clip: true
+
+        PropertyAnimation {
+            id: mapFadeInAnimation;
+            target: background;
+            property: "opacity";
+            from: 0
+            to: 1
+            duration: 500
+        }
     }
 
     Image {
