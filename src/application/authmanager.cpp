@@ -1147,8 +1147,21 @@ void AuthManager::startWorker(size_t id)
         mTimers.at(id)->setSingleShot(true);
         mTimers.at(id)->start(PINGWORKER_MAX_TIMEOUT);
     } else if (!mHubToPing.empty()) {
-        int hub = mHubToPing.front();
-        mHubToPing.pop();
+        int hub = -1;
+        do {
+            int hubToCheck = mHubToPing.front();
+            mHubToPing.pop();
+            // TODO : why mHubToPing contains hubs which are not present in mHubsModel!?!?!
+            if (mHubsModel->server(hub) != nullptr) {
+                hub = hubToCheck;
+            }
+        } while (hub != -1 || !mHubToPing.empty());
+
+        if (hub == -1) {
+            mPingsLoaded = true;
+            return;
+        }
+
         Log::logt("startWorker will ping hub number " + QString::number(hub));
 
         if (mWorkers.at(id) != nullptr) {
@@ -1176,9 +1189,7 @@ void AuthManager::startWorker(size_t id)
         mTimers.at(id)->setSingleShot(true);
         mTimers.at(id)->start(PINGWORKER_MAX_TIMEOUT);
     } else {
-        if (!mPingsLoaded) {
-            mPingsLoaded = true;
-        }
+        mPingsLoaded = true;
     }
 }
 
@@ -1436,6 +1447,7 @@ bool AuthManager::isServerListLoaded() const
     return mServersModel->count() > 0 && mHubsModel->count() > 0;
 }
 
+
 void AuthManager::loginFinished()
 {
     QString message = processLoginResult();
@@ -1444,7 +1456,7 @@ void AuthManager::loginFinished()
         VPNServiceManager::instance()->sendCredentials();
     } else {
         // Login failed, so get default server list instead
-        getDefaultServerList();
+        //getDefaultServerList();
         emit loginError(message);
     }
 }
