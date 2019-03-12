@@ -1059,6 +1059,11 @@ QString AuthManager::processLoginResult()
             return error.errorString();
 
         QJsonObject documentObject = jsonDoc.object();
+        int errorCode = documentObject.value("error").toString().toInt();
+        if (errorCode == 400) {
+            mLoggedIn = false;
+            return "Cannot log in with this name and password pair";
+        }
 
         int package = documentObject.value("package").toString().toInt();
         QDate expiration = QDate::fromString(documentObject.value("expire_date").toString(), "yyyy-MM-dd");
