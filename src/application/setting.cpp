@@ -866,7 +866,12 @@ int Setting::currentProtocol()
 
 void Setting::setServer(int ixsrv)
 {
+    Log::logt("Setting setServer called");
     AServer *se = AuthManager::instance()->getServer(ixsrv, true);
+    if (se == nullptr) {
+        Log::logt("Setting setServer - server not Found!!!");
+        return;
+    }
     QString newsrv = se->name();
     mSettings.setValue(LocationSettingsName(), ixsrv);
     mSettings.setValue(LocationSettingsStrName(), newsrv);
