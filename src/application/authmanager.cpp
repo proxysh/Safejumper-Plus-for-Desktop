@@ -1120,6 +1120,9 @@ void AuthManager::startWorker(size_t id)
     if (!mToPing.empty()) {
         int srv = mToPing.front();
         mToPing.pop();
+        if (mServersModel->server(srv) == nullptr) {
+            return ;
+        }
         Log::logt("startWorker will ping server number " + QString::number(srv));
 
         if (mWorkers.at(id) != nullptr) {
