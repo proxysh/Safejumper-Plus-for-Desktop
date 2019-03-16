@@ -35,8 +35,8 @@ const QString kAppName = "Safejumper";
 const QString kOrgName = "sh.proxy";
 const QString kLowerAppName = "safejumper";
 
-#define APP_BUILD_NUM 100
-#define APP_BUILD "100"
+#define APP_BUILD_NUM 102
+#define APP_BUILD "102"
 #define APP_VERSION "5.0"
 
 #define APPLICATION_VERSION QObject::tr("Version %1 (build %2)").arg(APP_VERSION).arg(APP_BUILD)
