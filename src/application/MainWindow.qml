@@ -30,8 +30,8 @@ Rectangle {
     transformOrigin: Item.TopLeft
 
     property color defaultColor: "#C53232"
-    property string shopUrl: "https://proxy.sh"
-    property string updateUrl: "https://proxy.sh/download"
+    property string shopUrl: "https://proxy.sh/panel"
+    property string updateUrl: "https://proxy.sh/software"
 
     // Increase, and if it hits 3 go directly to login page
     property int onboardingTimes: 0

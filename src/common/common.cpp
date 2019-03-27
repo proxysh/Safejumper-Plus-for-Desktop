@@ -55,22 +55,22 @@ bool OpenUrl(const char * url)
 
 bool OpenUrl_Support()
 {
-    return OpenUrl("https://www.mbaex.com");
+    return OpenUrl("https://proxy.sh/contact");
 }
 
 bool OpenUrl_Panel()
 {
-    return OpenUrl("https://www.mbaex.com");
+    return OpenUrl("https://proxy.sh/panel");
 }
 
 bool OpenUrl_Earn()
 {
-    return OpenUrl("https://www.mbaex.com");
+    return OpenUrl("https://proxy.sh/contact");
 }
 
 bool OpenUrl_Bug()
 {
-    return OpenUrl("https://www.mbaex.com");
+    return OpenUrl("https://proxy.sh/contact");
 }
 
 // maybe empty str >>> false
