@@ -36,7 +36,13 @@ Column {
     function updateLogs()
     {
         console.log("updateLogs called");
-        logsText.text = mainwindow.logsContent();
+        var truncated = mainwindow.logsContent();
+        if (truncated.length > 10000) {
+            var index = truncated.lastIndexOf("\n", truncated.length - 8000);
+            truncated = truncated.substring(index, truncated.length);
+        }
+
+        logsText.text = truncated;
     }
 
     ShadowRect {
