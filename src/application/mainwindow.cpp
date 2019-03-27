@@ -206,10 +206,10 @@ const QString MainWindow::logsContent() const
         QTextStream serviceTextStream(&serviceFile);
         retval = "Service log:\n";
         retval += serviceTextStream.readAll();
+        serviceFile.close();
     } else {
         retval += "Unable to open service log at: " + PathHelper::Instance()->serviceLogFilename() + "\n";
     }
-
     QFile f(PathHelper::Instance()->applicationLogFilename());
     if (!f.open(QFile::ReadOnly | QFile::Text))
         return retval;
@@ -217,8 +217,8 @@ const QString MainWindow::logsContent() const
     QTextStream in(&f);
     retval += "\nGui log:\n";
     retval += in.readAll();
-
     f.close();
+
     return retval;
 }
 
@@ -431,6 +431,31 @@ void MainWindow::messageReceived(const QString &message)
 {
     if (message == "show") {
         showAndFocus();
+    }
+}
+
+void MainWindow::onKillSwitch()
+{
+    // implementation is the same as in the old Safejumper
+    bool doblock = false;
+    if (Setting::instance()->blockOnDisconnect()) {
+        if (AuthManager::exists()) {
+            if (!AuthManager::instance()->loggedIn()) {
+                doblock = true;
+            } else {
+                if (!VPNServiceManager::exists()) {
+                    doblock = true;
+                } else {
+                    if (VPNServiceManager::instance()->state() == vpnStateDisconnected)
+                        doblock = true;
+                    // otherwise unblocked and should be unblocked
+                }
+            }
+        }
+    }
+
+    if (doblock) {
+        VPNServiceManager::instance()->sendNetdownCommand();
     }
 }
 

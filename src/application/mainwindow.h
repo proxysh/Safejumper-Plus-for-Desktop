@@ -86,6 +86,8 @@ private slots:
 
     void messageReceived(const QString &message);
 
+    void onKillSwitch();
+
 private:
     static QPointer<MainWindow> mInstance;
     explicit MainWindow();
