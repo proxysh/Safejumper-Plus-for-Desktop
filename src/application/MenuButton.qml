@@ -18,6 +18,7 @@
 
 import QtQuick 2.11
 import QtQuick.Controls 2.4
+import QtQuick.Layouts 1.3
 
 Rectangle {
     id: button
@@ -40,11 +41,15 @@ Rectangle {
     }
 
     Row {
+        id: row
         anchors.fill: parent
         // Less margin when hovering since icons are slightly wider with shadows
         anchors.leftMargin: 48
-        spacing: 16
+        spacing: 8
+
+        Rectangle { color: "transparent"; width: (38 - buttonIconID.width)/2; height: 50 }
         Image {
+            id: buttonIconID
             fillMode: Image.Pad
             anchors.verticalCenter: parent.verticalCenter
             source: mouseArea.containsMouse ? hoverButtonIcon : buttonIcon
@@ -52,7 +57,10 @@ Rectangle {
             verticalAlignment: Image.verticalCenter
         }
 
+        Rectangle { color: "transparent"; width: (38 - buttonIconID.width)/2; height: 50 }
+
         Text {
+            id: element1
             anchors.verticalCenter: parent.verticalCenter
             font.pixelSize: 18
             font.family: "Roboto"
