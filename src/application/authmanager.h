@@ -166,6 +166,7 @@ signals:
 private slots:
     void loginNetworkError(QNetworkReply::NetworkError error);
     void loginFinished();
+    void autoLog();
 
     void createAccountError(QNetworkReply::NetworkError error);
     void createAccountFinished();

@@ -74,6 +74,7 @@ AuthManager::AuthManager()
 
     connect(VPNServiceManager::instance(), &VPNServiceManager::gotNewIp,
             this, &AuthManager::setNewIp);
+    connect(this, SIGNAL(hubsLoaded()), this, SLOT(autoLog()));
 }
 
 AuthManager::~AuthManager()
@@ -1466,6 +1467,14 @@ void AuthManager::loginFinished()
         // Login failed, so get default server list instead
         //getDefaultServerList();
         emit loginError(message);
+    }
+}
+
+void AuthManager::autoLog()
+{
+    if (Setting::instance()->autoconnect() && this->loggedIn()) {
+        Log::logt("Connect after login set, so launching openvpn");
+        VPNServiceManager::instance()->sendConnectToVPNRequest();
     }
 }
 
