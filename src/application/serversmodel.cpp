@@ -243,5 +243,12 @@ QList<int> ServersModel::favoriteServers()
             favorites << i;
     }
 
+    int currentFavorite = Setting::instance()->favorite();
+    if (std::find(favorites.begin(), favorites.end(), currentFavorite) == favorites.end())
+    {
+        if (!favorites.empty())
+            Setting::instance()->setFavorite(favorites.at(0));
+    }
+
     return favorites;
 }
