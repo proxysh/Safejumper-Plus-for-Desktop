@@ -58,12 +58,17 @@ Item {
 
         ListView {
             id: allServersList
-            anchors.top: headerArea.bottom
-            anchors.topMargin: 25
-            anchors.bottom: parent.bottom
-            width: parent.width - 40 // 20px margin on either side
-            anchors.horizontalCenter: parent.horizontalCenter
-
+            anchors {
+                bottom: parent.bottom
+                top: headerArea.bottom
+                topMargin: 25
+                left: parent.left
+                leftMargin: 20
+                rightMargin: 20
+                right: parent.right
+                horizontalCenter: parent.horizontalCenter
+            }
+            cacheBuffer: 10000
             model: allserversmodel
             spacing: 10
             clip: true

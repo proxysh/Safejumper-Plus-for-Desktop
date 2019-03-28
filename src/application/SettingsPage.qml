@@ -227,20 +227,25 @@ Item {
         Flickable {
             width: parent.width
             anchors.top: headerArea.bottom
-//            anchors.topMargin: 5
-//            anchors.bottomMargin: 5
+            boundsMovement: Flickable.StopAtBounds
+            boundsBehavior: Flickable.StopAtBounds
             anchors.bottom: parent.bottom
             contentHeight: settingsColumn.childrenRect.height + 40
             clip: true
-
+            flickDeceleration: 1000
+            maximumFlickVelocity: 2500
             Column {
                 id: settingsColumn
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: parent.top
-                anchors.topMargin: 20
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 20
-                width: parent.width - 40 // 20 px margin on both sides
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                    top: parent.top
+                    topMargin: 20
+                    left: parent.left
+                    leftMargin: 20
+                    rightMargin: 20
+                    right: parent.right
+                    bottomMargin: 20
+                }
                 spacing: 10
 
                 ShadowRect {
