@@ -128,6 +128,8 @@ Rectangle {
         errorPopup.title = qsTr("Incorrect credentials");
         errorPopup.subtitle = message;
         showPopup(errorPopup);
+        splashScreen.visible = false;
+        showLogin();
     }
 
     function logout()
