@@ -58,6 +58,11 @@ Item {
 
         ListView {
             id: allServersList
+            boundsMovement: Flickable.StopAtBounds
+            boundsBehavior: Flickable.StopAtBounds
+            clip: true
+            flickDeceleration: 1000
+            maximumFlickVelocity: 2500
             anchors {
                 bottom: parent.bottom
                 top: headerArea.bottom
@@ -71,7 +76,6 @@ Item {
             cacheBuffer: 10000
             model: allserversmodel
             spacing: 10
-            clip: true
             currentIndex: settings.server
             focus: true
             delegate:
