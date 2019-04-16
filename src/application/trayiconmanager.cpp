@@ -139,13 +139,13 @@ void TrayIconManager::createTrayIconMenu()
     if (!Setting::instance()->testing()) {
         mTrayIconMenu->addAction(mWebManageAction.get());
         mTrayIconMenu->addAction(mSupportAction.get());
-        mTrayIconMenu->addAction(mBugAction.get());
+        //mTrayIconMenu->addAction(mBugAction.get());
         mTrayIconMenu->addAction(mEarnAction.get());
         mTrayIconMenu->addSeparator();
     }
 
     //_TrayMenu->addAction(_ac_About.get());
-    mTrayIconMenu->addAction(mLogoutAction.get());
+    //mTrayIconMenu->addAction(mLogoutAction.get());
     mTrayIconMenu->addAction(mCloseAction.get());
 #ifdef Q_OS_DARWIN
     mTrayIconMenu->addAction(mCloseAction2.get());
