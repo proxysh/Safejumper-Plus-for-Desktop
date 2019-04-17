@@ -31,7 +31,7 @@
 
 #define kHELPER_LABEL "sh.proxy.SafejumperHelper"
 
-const QString kAppName = "Safejumper";
+const QString kAppName = "SafejumperPlus";
 const QString kOrgName = "sh.proxy";
 const QString kLowerAppName = "safejumper";
 
