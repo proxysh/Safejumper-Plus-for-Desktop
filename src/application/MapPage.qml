@@ -39,7 +39,7 @@ Item {
     {
         currentServer = allserversmodel.server(settings.server)
         favoriteServer = allserversmodel.server(settings.favorite)
-        var iso = favoriteServer.iso
+        var iso = currentServer.iso
         currentServerCard.currentServer = currentServer;
         if (!background2.source)
             background2.source = background.source;
@@ -53,8 +53,10 @@ Item {
         background.y = -settings.mapYOffset()
         leftButton.opacity = authmanager.hasPreviousFavorite() ? 1.0 : 0.0
         rightButton.opacity = authmanager.hasNextFavorite() ? 1.0 : 0.0
-        mapFadeOutAnimation.start();
-        mapFadeInAnimation.start();
+        if (background2.source != background.source) {
+            mapFadeOutAnimation.start();
+            mapFadeInAnimation.start();
+        }
     }
 
     function stateChanged()
@@ -65,6 +67,7 @@ Item {
         background.source = settings.mapData() // "../maps/" + iso + vpnservicemanager.stateMapSuffix
         background.x = -settings.mapXOffset()
         background.y = -settings.mapYOffset()
+        refresh()
     }
 
     function updateFavorites()
@@ -248,8 +251,10 @@ Item {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        settings.server = settings.favorite;
-                        screen.connectToVPN();
+                        if (settings.server != settings.favorite) {
+                            settings.server = settings.favorite;
+                            screen.connectToVPN();
+                        }
                     }
                 }
             }

@@ -187,6 +187,8 @@ Rectangle {
 
         onConfirm: {
             screen.hidePopup(logoutConfirmation);
+            if (vpnservicemanager.vpnState == 1 || vpnservicemanager.vpnState == 2) // Connecting
+                       vpnservicemanager.sendDisconnectFromVPNRequest();
             authmanager.logout();
             stack.push(loginPage);
         }

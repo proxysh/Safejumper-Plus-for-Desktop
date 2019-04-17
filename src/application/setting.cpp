@@ -194,6 +194,17 @@ const QString Setting::favoriteIsoCode()
     return "US";
 }
 
+const QString Setting::serverIsoCode()
+{
+    int index = serverID();
+    AServer *server = AuthManager::instance()->getServer(index);
+    if (server)
+        return server->iso();
+
+    // Default to china for now if both of the above fail
+    return "US";
+}
+
 //const std::vector<QString> & Setting::currentEncryptionProtocols()
 //{
 //    int enc = encryption();
@@ -959,17 +970,18 @@ QString Setting::mapData()
 {
     const QString kSvgString = "data:image/svg+xml;utf8,%1";
 
-    QString iso = favoriteIsoCode();
+    QString iso = serverIsoCode();
     QString fill = kNotConnectedFill;
 
-    if (serverID() == favorite() || AuthManager::instance()->favoritesCount() == 0) {
+    //if (serverID() == favorite() || AuthManager::instance()->favoritesCount() == 0) {
         // We are connecting to the favorite or there are no favorites
         int state = VPNServiceManager::instance()->state();
         if (state == vpnStateConnected)
             fill = kConnectedFill;
         else if (state == vpnStateConnecting)
             fill = kConnectingFill;
-    }
+
+    //}
     Log::logt(QString("Getting map data for iso code %1").arg(iso));;
     QDomDocument svgData = mSvgData.cloneNode(true).toDocument();
     QDomElement path;
@@ -991,7 +1003,7 @@ QString Setting::mapData()
 
 int Setting::mapXOffset()
 {
-    QString iso = favoriteIsoCode();
+    QString iso = serverIsoCode();
     if (mCornerByCountry.contains(iso))
         return mCornerByCountry.value(iso).x();
 
@@ -1000,7 +1012,7 @@ int Setting::mapXOffset()
 
 int Setting::mapYOffset()
 {
-    QString iso = favoriteIsoCode();
+    QString iso = serverIsoCode();
     if (mCornerByCountry.contains(iso))
         return mCornerByCountry.value(iso).y();
 

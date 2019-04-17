@@ -66,6 +66,7 @@ VPNServiceManager::VPNServiceManager(QObject *parent)
     QObject::connect(&m_socket, &QLocalSocket::readyRead, this, &VPNServiceManager::socket_readyRead);
     QObject::connect(&m_socket, &QLocalSocket::disconnected, this, &VPNServiceManager::socket_disconnected);
     QObject::connect(&m_socket, SIGNAL(error(QLocalSocket::LocalSocketError)), this, SLOT(socket_error(QLocalSocket::LocalSocketError)));
+    QObject::connect(&mStatusDescHandler, SIGNAL(statusChanged()), this, SIGNAL(statusDescChanged()));
 }
 
 bool VPNServiceManager::ensureConnected()
@@ -145,6 +146,7 @@ vpnState VPNServiceManager::state()
 {
     return mState;
 }
+
 
 bool VPNServiceManager::connectToCore()
 {
@@ -259,6 +261,12 @@ void VPNServiceManager::sendConnectToVPNRequest()
 void VPNServiceManager::sendDisconnectFromVPNRequest()
 {
     Log::logt(QString("sendDisconnectFromVPNRequest called"));
+    mState = vpnStateDisconnecting;
+    mStatusDescHandler.updateDesc(vpnStateDisconnecting);
+    emit stateChanged(mState);
+    emit vpnStateChanged();
+    emit statusDescChanged();
+
     mUserRequestedDisconnect = true;
     if (ensureConnected()) {
         QJsonObject jObj;
@@ -332,6 +340,7 @@ void VPNServiceManager::socket_readyRead()
 //            Log::logt(QString("Got state change to %1").arg(vpnStateWord((vpnState)state)));
 
             mState = static_cast<vpnState>(state);
+            mStatusDescHandler.updateDesc(mState);
             // Now that we are connected, stop port loop
             if (mState == vpnStateConnected)
                 mInPortLoop = false;
@@ -340,6 +349,7 @@ void VPNServiceManager::socket_readyRead()
 
             emit stateChanged(mState);
             emit vpnStateChanged();
+            emit statusDescChanged();
         }
         break;
 
@@ -347,7 +357,9 @@ void VPNServiceManager::socket_readyRead()
             qint32 state = jsonObj.value("state").toInt();
             qDebug() << "Got state word change to word " << state;
 //            Log::logt(QString("Got status word change to %1").arg(vpnStateWord((vpnState)state)));
+            mStatusDescHandler.updateDesc(static_cast<OpenVPNStateWord>(state));
             emit stateWord(static_cast<OpenVPNStateWord>(state));
+            emit statusDescChanged();
         }
         break;
 
@@ -394,6 +406,7 @@ void VPNServiceManager::socket_error(QLocalSocket::LocalSocketError error)
 {
     Log::logt("Socket error " + QString::number(error));
 }
+
 
 void VPNServiceManager::startPortLoop(bool changePort)
 {
@@ -513,6 +526,11 @@ const QString VPNServiceManager::stateMapSuffix() const
     return retval;
 }
 
+const QString VPNServiceManager::statusDesc() const
+{
+    return mStatusDescHandler.getDesc();
+}
+
 void VPNServiceManager::tryNextPort()
 {
     if (mChangingPorts)
@@ -542,3 +560,64 @@ void VPNServiceManager::restartService()
 #endif
 }
 
+
+StatusDesc::StatusDesc():
+    mWord(ovnStateUnknown),
+    mState(vpnStateDisconnected),
+    mDesc("Connect")
+{
+
+}
+
+QString StatusDesc::getDesc() const
+{
+    return mDesc;
+}
+
+void StatusDesc::updateDesc(OpenVPNStateWord word)
+{
+    if (word != mWord) {
+        mWord = word;
+        mDesc = getDesc(word);
+        emit statusChanged();
+    }
+}
+
+void StatusDesc::updateDesc(vpnState state)
+{
+    if (state != mState) {
+        mState = state;
+        mDesc = getDesc(state);
+        emit statusChanged();
+    }
+}
+
+QString StatusDesc::getDesc(vpnState state)
+{
+    switch (state) {
+        case vpnStateDisconnected: return QString("CONNECT");
+        case vpnStateConnecting: return QString("CONNECTING");
+        case vpnStateConnected: return QString("DISCONNECT");
+        case vpnStateTotal: return QString("Total");
+        case vpnStateDisconnecting: return QString("Disconnecting");
+    }
+    return QString("Unknown");
+}
+
+QString StatusDesc::getDesc(OpenVPNStateWord word)
+{
+    switch (word) {
+        case ovnStateConnecting: return QString("Connecting");
+        case ovnStateTCPConnecting: return QString("TCP Connecting");
+        case ovnStateWait: return QString("Waiting");
+        case ovnStateExiting: return QString("Exiting");
+        case ovnStateReconnecting: return QString("Reconnecting");
+        case ovnStateAuth: return QString("Authing");
+        case ovnStateGetConfig: return QString("Configuring");
+        case ovnStateAssignIP: return QString("Assigning IP");
+        case ovnStateResolve: return QString("Resolving");
+        case ovnStateUnknown: return QString("Connect");
+    }
+
+    return QString("Unknown");
+}

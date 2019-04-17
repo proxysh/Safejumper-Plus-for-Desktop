@@ -416,7 +416,7 @@ ShadowRect {
             contentItem: Text {
                 horizontalAlignment: Qt.AlignHCenter
                 verticalAlignment: Qt.AlignVCenter
-                text: vpnservicemanager.vpnState == 0 ? qsTr("CONNECT") : vpnservicemanager.vpnState == 1 ? qsTr("CONNECTING") : qsTr("DISCONNECT");
+                text: qsTr(vpnservicemanager.vpnStatusDesc)
                 color: 'white'
                 opacity: enabled ? 1.0 : 0.3
                 font.family: "Roboto"
@@ -426,8 +426,9 @@ ShadowRect {
 
             onClicked: {
                 // Select this server if it's not the current server
-                if (settings.server != currentServer.id)
+                if (settings.server != currentServer.id) {
                     settings.server = currentServer.id;
+                }
 
                 if (screen.connectToVPN())
                     connectButton.enabled = false;

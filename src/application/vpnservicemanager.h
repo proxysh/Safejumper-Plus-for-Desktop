@@ -25,6 +25,26 @@
 #include <QObject>
 #include <QTimer>
 
+class StatusDesc : public QObject
+{
+    Q_OBJECT
+public:
+    StatusDesc();
+    QString getDesc() const;
+    void updateDesc(OpenVPNStateWord word);
+    void updateDesc(vpnState state);
+
+    static QString getDesc(vpnState state);
+    static QString getDesc(OpenVPNStateWord word);
+signals:
+    void statusChanged();
+
+private:
+    OpenVPNStateWord mWord;
+    vpnState mState;
+    QString mDesc;
+};
+
 /*!
  * @brief A class acting as a mediator between the client (GUI) and the actual backend
  * This class wraps the requests into a custom command to be sent to the service
@@ -38,6 +58,7 @@ class VPNServiceManager : public QObject
     Q_PROPERTY(QString stateDot READ stateDot NOTIFY vpnStateChanged)
     Q_PROPERTY(QString stateMapSuffix READ stateMapSuffix NOTIFY vpnStateChanged)
     Q_PROPERTY(int vpnState READ state NOTIFY vpnStateChanged)
+    Q_PROPERTY(QString vpnStatusDesc READ statusDesc NOTIFY statusDescChanged)
 
 public:
     static VPNServiceManager * instance();
@@ -56,6 +77,7 @@ public:
     // Which dot image to use for the current state
     const QString stateDot() const;
     const QString stateMapSuffix() const;
+    const QString statusDesc() const;
 
 signals:
     /*!
@@ -66,6 +88,7 @@ signals:
     void stateChanged(vpnState state);
 
     void vpnStateChanged();
+    void statusDescChanged();
 
     /*!
      * Notify the client of status word changes
@@ -167,6 +190,7 @@ private:
     bool mInPortLoop;
     bool mPortDialogShown;
     bool mUserRequestedDisconnect;
+    StatusDesc mStatusDescHandler;
 };
 
 #endif // QBCVPNSERVICECONNECTION_H

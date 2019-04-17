@@ -264,6 +264,7 @@ private:
     static void PopulateColls(std::vector<QString> & v_strs, std::vector<int> & v_ports, size_t sz, const char ** protocols, const int * ports);
 
     const QString favoriteIsoCode();
+    const QString serverIsoCode();
 
     QString ProtocolSettingsName();
     QString ProtocolSettingsStrName();
