@@ -254,6 +254,7 @@ void TrayIconManager::refreshStateIcon()
             break;
         case vpnStateDisconnected:
         case vpnStateTotal:
+        case vpnStateDisconnecting:
             iconName = disconnectedIcon();
             break;
         }
@@ -266,6 +267,7 @@ void TrayIconManager::refreshStateIcon()
 
 void TrayIconManager::stateChanged(vpnState st)
 {
+    if (st == vpnStateDisconnecting) return;
     refreshStateIcon();
 
     QString message;

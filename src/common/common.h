@@ -109,7 +109,8 @@ enum vpnState {
     vpnStateDisconnected = 0,
     vpnStateConnecting,
     vpnStateConnected,
-    vpnStateTotal
+    vpnStateTotal,
+    vpnStateDisconnecting
 };
 
 QString vpnStateWord(vpnState state);
