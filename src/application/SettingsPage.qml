@@ -934,9 +934,9 @@ Item {
                         anchors.fill: parent
                         onClicked:
                             {
-                                mainwindow.launchUrl(updateUrl);
-                                //showPopup(updatesPopup);
-                                //updatesPopup.checkForUpdates();
+                                //mainwindow.launchUrl(updateUrl);
+                                showPopup(updatesPopup);
+                                updatesPopup.checkForUpdates();
                             }
                     }
 

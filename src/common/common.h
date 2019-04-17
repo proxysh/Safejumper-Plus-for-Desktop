@@ -42,17 +42,17 @@ const QString kLowerAppName = "safejumper";
 #define APPLICATION_VERSION QObject::tr("Version %1 (build %2)").arg(APP_VERSION).arg(APP_BUILD)
 
 #ifdef Q_OS_DARWIN
-#define UPDATE_URL "https://proxy.sh/safejumper_mac.xml"
+#define UPDATE_URL "https://proxy.sh/safejumperplus_mac.xml"
 #define OS_STRING "Mac"
 #endif
 
 #ifdef Q_OS_WIN
-#define UPDATE_URL "https://proxy.sh/safejumper_windows.xml"
+#define UPDATE_URL "https://proxy.sh/safejumperplus_windows.xml"
 #define OS_STRING "Windows"
 #endif
 
 #ifdef Q_OS_LINUX
-#define UPDATE_URL "https://proxy.sh/safejumper_linux.xml"
+#define UPDATE_URL "https://proxy.sh/safejumperplus_linux.xml"
 #define OS_STRING "Linux"
 #endif
 
