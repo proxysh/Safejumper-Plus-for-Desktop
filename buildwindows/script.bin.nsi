@@ -1,15 +1,15 @@
 !include "MUI2.nsh"
 icon "application.ico"
-Name Safejumper
-OutFile Safejumper_install.exe ; NsiDecompiler: generated value!
+Name SafejumperPlus
+OutFile SafejumperPlus_install.exe ; NsiDecompiler: generated value!
 InstallColors 00FF00 000000
-InstallDir 'C:\Program Files\Safejumper'
+InstallDir 'C:\Program Files\SafejumperPlus'
 Page directory "" "" ""
 Page instfiles "" "" ""
 Page custom ""  ""
 
-!define VERSION         "5.0"
-!define BUILD             "100"
+!define VERSION         "5.1"
+!define BUILD             "106"
 
 Section main
 
@@ -17,23 +17,23 @@ SectionIn RO
        CreateDirectory $INSTDIR
        SetOutPath $INSTDIR
        # Stop and uninstall service in case it's running
-	   nsExec::Exec 'taskkill /f /im safejumper.exe'
+	   nsExec::Exec 'taskkill /f /im safejumperplus.exe'
 	   Pop $0
-       nsExec::Exec '$INSTDIR\safejumperservice.exe -t'
+       nsExec::Exec '$INSTDIR\safejumperplusservice.exe -t'
        Pop $0
-       nsExec::Exec '$INSTDIR\safejumperservice.exe -u'
+       nsExec::Exec '$INSTDIR\safejumperplusservice.exe -u'
        Pop $0
        nsExec::Exec 'taskkill /f /im openvpn.exe'
        Pop $0
-       nsExec::Exec 'taskkill /f /im safejumperservice.exe'
+       nsExec::Exec 'taskkill /f /im safejumperplusservice.exe'
        Pop $0
        
        File  libeay32.dll
        File  vcredist_x86.exe
        File  ssleay32.dll
        File  application.ico
-       File  safejumper.exe
-       File  safejumperservice.exe
+       File  safejumperplus.exe
+       File  safejumperplusservice.exe
        File  Qt5Core.dll
        File  Qt5Gui.dll
        File  Qt5Network.dll
@@ -107,17 +107,17 @@ SectionIn RO
         ExecWait '$INSTDIR\vcredist_x86.exe /install /quiet /norestart'
 
        ; Stop and unnistall in case a previous build is installed
-       nsExec::Exec '$INSTDIR\safejumperservice.exe -t'
+       nsExec::Exec '$INSTDIR\safejumperplusservice.exe -t'
        Pop $0
-       nsExec::Exec '$INSTDIR\safejumperservice.exe -u'
+       nsExec::Exec '$INSTDIR\safejumperplusservice.exe -u'
        Pop $0
-       nsExec::Exec '$INSTDIR\safejumperservice.exe -i'
+       nsExec::Exec '$INSTDIR\safejumperplusservice.exe -i'
        Pop $0
-       nsExec::Exec '$INSTDIR\safejumperservice.exe -s'
+       nsExec::Exec '$INSTDIR\safejumperplusservice.exe -s'
        Pop $0
 
     # set DACL for todylserver
-    nsExec::Exec 'sc sdset "Safejumper" D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRCRPWP;;;IU)(A;;CCLCSWLOCRRC;;;SU)'
+    nsExec::Exec 'sc sdset "SafejumperPlus" D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRCRPWP;;;IU)(A;;CCLCSWLOCRRC;;;SU)'
 
     # create the uninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"
@@ -126,36 +126,36 @@ SectionIn RO
     # point the new shortcut at the program uninstaller
 
 	SetOutPath $INSTDIR
-    CreateShortCut  "$DESKTOP\Safejumper for Windows.lnk" "$INSTDIR\safejumper.exe"
-    CreateDirectory "$SMPROGRAMS\Safejumper"
-    CreateShortCut  "$SMPROGRAMS\Safejumper\Safejumper.lnk" "$INSTDIR\safejumper.exe"
-    CreateShortCut  "$SMPROGRAMS\Safejumper\Uninstall.lnk" "$INSTDIR\uninstall.exe"
+    CreateShortCut  "$DESKTOP\SafejumperPlus for Windows.lnk" "$INSTDIR\safejumperplus.exe"
+    CreateDirectory "$SMPROGRAMS\SafejumperPlus"
+    CreateShortCut  "$SMPROGRAMS\SafejumperPlus\SafejumperPlus.lnk" "$INSTDIR\safejumperplus.exe"
+    CreateShortCut  "$SMPROGRAMS\SafejumperPlus\Uninstall.lnk" "$INSTDIR\uninstall.exe"
 
     # Add uninstaller to registry for easy uninstallation
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper" \
-            "DisplayName" "Safejumper"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus" \
+            "DisplayName" "SafejumperPlus"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus" \
             "DisplayIcon" "$INSTDIR\application.ico"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus" \
             "Publisher" "Proxy.sh"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus" \
             "DisplayVersion" "${VERSION} build ${BUILD}"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus" \
             "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus" \
             "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
 SectionEnd
 
 # uninstaller section start
 Section "uninstall"
 
-    Delete  $DESKTOP\Safejumper.lnk
-    Delete  $SMPROGRAMS\Safejumper\Safejumper.lnk
-    Delete  $SMPROGRAMS\Safejumper\Uninstall.lnk
+    Delete  $DESKTOP\SafejumperPlus.lnk
+    Delete  $SMPROGRAMS\SafejumperPlus\SafejumperPlus.lnk
+    Delete  $SMPROGRAMS\SafejumperPlus\Uninstall.lnk
     ExecWait '$INSTDIR\OpenVPN\Uninstall.exe /S'  $0
     RMDir /r $INSTDIR\*.*
     RMDir $INSTDIR
-    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus"
 
 # uninstaller section end
 SectionEnd

@@ -17,9 +17,9 @@ SUBDIRS += \
     netdown
 
     # Bundle App name
-    BUNDLEAPP = "Safejumper"
-    APPNAME = "Safejumper.app"
-    HELPERAPP = sh.proxy.SafejumperHelper
+    BUNDLEAPP = "Safejumper Plus"
+    APPNAME = "SafejumperPlus.app"
+    HELPERAPP = sh.proxy.SafejumperPlusHelper
     HELPERAPP_INFO = SafejumperHelper-Info.plist
     HELPER_APP_LAUNCHD_INFO = sh.proxy.SafejumperHelper.plist
     RESOURCES_INST_DIR = $$shell_quote($$OUT_PWD/application/$${APPNAME}/Contents/Resources/)
@@ -39,7 +39,7 @@ SUBDIRS += \
     include (common/certificate.pri)
 
     # Bundle identifier for your application
-    BUNDLEID = sh.proxy.Safejumper
+    BUNDLEID = sh.proxy.SafejumperPlus
 
     QMAKE_CFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
     QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO

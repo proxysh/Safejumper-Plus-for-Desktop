@@ -454,8 +454,8 @@ bool Setting::startup()
 static const QString gs_desktop =
     "[Desktop Entry]\n"
     "Type=Application\n"
-    "Name=Safejumper\n"
-    "Exec=/opt/safejumper/safejumper\n"
+    "Name=Safejumper Plus\n"
+    "Exec=/opt/safejumperplus/safejumperplus\n"
     "Icon=/usr/share/icons/hicolor/64x64/apps/safejumper.png\n"
     "Comment=OpenVPN client for proxy.sh\n"
     "X-GNOME-Autostart-enabled=true\n";

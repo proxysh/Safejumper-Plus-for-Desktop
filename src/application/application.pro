@@ -6,8 +6,8 @@
 
 QT	   += network xml core gui widgets qml quick svg
 
-TARGET = safejumper
-APPNAME = Safejumper
+TARGET = safejumperplus
+APPNAME = SafejumperPlus
 TEMPLATE = app
 INCLUDEPATH += ../common
 
@@ -48,7 +48,7 @@ win32: {
     WINSDK_DIR = C:/Program Files/Microsoft SDKs/Windows/v7.1
     WIN_PWD = $$replace(PWD, /, \\)
     OUT_PWD_WIN = $$replace(OUT_PWD, /, \\)
-    QMAKE_POST_LINK = "$$quote($$OUT_PWD_WIN\\..\\fixbinary.bat) $$quote($$OUT_PWD_WIN\\..\\safejumper.exe)"
+    QMAKE_POST_LINK = "$$quote($$OUT_PWD_WIN\\..\\fixbinary.bat) $$quote($$OUT_PWD_WIN\\..\\safejumperplus.exe)"
     RC_FILE = application.rc
     LIBS += -lws2_32 -lIphlpapi
     DESTDIR = ../../buildwindows/

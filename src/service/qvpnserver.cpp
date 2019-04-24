@@ -68,7 +68,7 @@ void QVPNServer::start()
     };
 
     if (listen(kSocketName) == false) {
-        Log::serviceLog("*** SafejumperVPN failed to listen for connections(another instance is running maybe?).");
+        Log::serviceLog("*** SafejumperPlusVPN failed to listen for connections(another instance is running maybe?).");
 
         return;
     }

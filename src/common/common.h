@@ -29,14 +29,14 @@
 #include <string>
 #include <vector>
 
-#define kHELPER_LABEL "sh.proxy.SafejumperHelper"
+#define kHELPER_LABEL "sh.proxy.SafejumperPlusHelper"
 
-const QString kAppName = "SafejumperPlus";
+const QString kAppName = "Safejumper Plus";
 const QString kOrgName = "sh.proxy";
-const QString kLowerAppName = "safejumper";
+const QString kLowerAppName = "safejumperplus";
 
-#define APP_BUILD_NUM 104
-#define APP_BUILD "104"
+#define APP_BUILD_NUM 106
+#define APP_BUILD "106"
 #define APP_VERSION "5.1"
 
 #define APPLICATION_VERSION QObject::tr("Version %1 (build %2)").arg(APP_VERSION).arg(APP_BUILD)
@@ -96,11 +96,11 @@ const QStringList kLanguageTranslations = {
     "gui_zh.qm"
 #else
 #ifdef Q_OS_DARWIN
-    "/Applications/Safejumper.app/Contents/Resources/gui_en.qm",
-    "/Applications/Safejumper.app/Contents/Resources/gui_zh.qm"
+    "/Applications/SafejumperPlus.app/Contents/Resources/gui_en.qm",
+    "/Applications/SafejumperPlus.app/Contents/Resources/gui_zh.qm"
 #else
-    "/opt/safejumper/gui_en.qm",
-    "/opt/safejumper/gui_zh.qm"
+    "/opt/safejumperplus/gui_en.qm",
+    "/opt/safejumperplus/gui_zh.qm"
 #endif
 #endif
 };
@@ -132,9 +132,9 @@ enum commands {
 };
 
 #ifdef Q_OS_WIN
-static const QString kSocketName = "SafejumperVPN";
+static const QString kSocketName = "SafejumperPlusVPN";
 #else
-static const QString kSocketName = "/var/tmp/SafejumperVPN";
+static const QString kSocketName = "/var/tmp/SafejumperPlusVPN";
 #endif
 
 enum EncryptionType {

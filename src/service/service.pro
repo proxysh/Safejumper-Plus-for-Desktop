@@ -2,12 +2,12 @@ QT       += core network
 CONFIG   += console qt c++11
 # DEFINES += QTSERVICE_DEBUG
 
-lessThan(QT_MAJOR_VERSION, 5) | lessThan(QT_MINOR_VERSION, 4) : error(Safejumper requires Qt 5.6 or newer but Qt $$[QT_VERSION] was detected.)
+lessThan(QT_MAJOR_VERSION, 5) | lessThan(QT_MINOR_VERSION, 4) : error(SafejumperPlus requires Qt 5.6 or newer but Qt $$[QT_VERSION] was detected.)
 
 TEMPLATE = app
 
-CONFIG(debug, debug|release)::TARGET = safejumperservice
-CONFIG(release, debug|release)::TARGET = safejumperservice
+CONFIG(debug, debug|release)::TARGET = safejumperplusservice
+CONFIG(release, debug|release)::TARGET = safejumperplusservice
 
 INCLUDEPATH += ../common
 
@@ -40,7 +40,7 @@ win32 {
 
     WIN_PWD = $$replace(PWD, /, \\)
     OUT_PWD_WIN = $$replace(OUT_PWD, /, \\)
-    QMAKE_POST_LINK = "$$quote($$OUT_PWD_WIN\\..\\fixbinaryadmin.bat) $$quote($$OUT_PWD_WIN\\..\\safejumperservice.exe) $$quote($$OUT_PWD_WIN\\..\\runasadmin.manifest)"
+    QMAKE_POST_LINK = "$$quote($$OUT_PWD_WIN\\..\\fixbinaryadmin.bat) $$quote($$OUT_PWD_WIN\\..\\safejumperplusservice.exe) $$quote($$OUT_PWD_WIN\\..\\runasadmin.manifest)"
     DESTDIR = ../../buildwindows/
     MOC_DIR = ../.obj/
 #    DEFINES += _ATL_XP_TARGETING
@@ -53,16 +53,16 @@ win32 {
 }
 
 macx: {
-    TARGET = sh.proxy.SafejumperHelper
+    TARGET = sh.proxy.SafejumperPlusHelper
     DESTDIR = ../
     CONFIG -= app_bundle
     target.path = /Applications
-    resources.path = /Applications/Safejumper.app/Contents/Resources
+    resources.path = /Applications/SafejumperPlus.app/Contents/Resources
     resources.files = ./resources/*
 
     include (../common/certificate.pri)
 
-    QMAKE_LFLAGS += -F /System/Library/Frameworks/Security.framework/ -sectcreate __TEXT __info_plist $$PWD/SafejumperHelper-Info.plist -sectcreate __TEXT __launchd_plist $$PWD/sh.proxy.SafejumperHelper.plist
+    QMAKE_LFLAGS += -F /System/Library/Frameworks/Security.framework/ -sectcreate __TEXT __info_plist $$PWD/SafejumperHelper-Info.plist -sectcreate __TEXT __launchd_plist $$PWD/sh.proxy.SafejumperPlusHelper.plist
     LIBS += -framework Security -framework Cocoa
 
     DISTFILES += SafejumperHelper-Info.plist \
@@ -71,7 +71,7 @@ macx: {
     # Bundle identifier for your application
     BUNDLEID = $${TARGET}
 
-    HOSTAPP_IDENTIFIER = sh.proxy.Safejumper
+    HOSTAPP_IDENTIFIER = sh.proxy.SafejumperPlus
     # QMAKE_PRE_LINK += /usr/libexec/PlistBuddy -c \'Set :SMAuthorizedClients:0 'anchor apple generic and identifier \\\"$${HOSTAPP_IDENTIFIER}\\\" and (certificate leaf[field.1.2.840.113635.100.6.1.9] /* exists */ or certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = $${CERT_OU})'\' $$PWD/SafejumperHelper-Info.plist;
 
 
