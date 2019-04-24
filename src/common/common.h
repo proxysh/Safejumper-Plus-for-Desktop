@@ -134,7 +134,7 @@ enum commands {
 #ifdef Q_OS_WIN
 static const QString kSocketName = "SafejumperPlusVPN";
 #else
-static const QString kSocketName = "/var/tmp/SafejumperPlusVPN";
+static const QString kSocketName = "/var/tmp/SafejumperVPN";
 #endif
 
 enum EncryptionType {

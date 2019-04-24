@@ -62,11 +62,11 @@ macx: {
 
     include (../common/certificate.pri)
 
-    QMAKE_LFLAGS += -F /System/Library/Frameworks/Security.framework/ -sectcreate __TEXT __info_plist $$PWD/SafejumperHelper-Info.plist -sectcreate __TEXT __launchd_plist $$PWD/sh.proxy.SafejumperPlusHelper.plist
+    QMAKE_LFLAGS += -F /System/Library/Frameworks/Security.framework/ -sectcreate __TEXT __info_plist $$PWD/SafejumperPlusHelper-Info.plist -sectcreate __TEXT __launchd_plist $$PWD/sh.proxy.SafejumperPlusHelper.plist
     LIBS += -framework Security -framework Cocoa
 
-    DISTFILES += SafejumperHelper-Info.plist \
-                 sh.proxy.SafejumperHelper.plist
+    DISTFILES += SafejumperPlusHelper-Info.plist \
+                 sh.proxy.SafejumperPlusHelper.plist
 
     # Bundle identifier for your application
     BUNDLEID = $${TARGET}

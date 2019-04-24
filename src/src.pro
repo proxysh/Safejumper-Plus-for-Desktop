@@ -17,11 +17,11 @@ SUBDIRS += \
     netdown
 
     # Bundle App name
-    BUNDLEAPP = "Safejumper Plus"
+    BUNDLEAPP = "SafejumperPlus"
     APPNAME = "SafejumperPlus.app"
     HELPERAPP = sh.proxy.SafejumperPlusHelper
-    HELPERAPP_INFO = SafejumperHelper-Info.plist
-    HELPER_APP_LAUNCHD_INFO = sh.proxy.SafejumperHelper.plist
+    HELPERAPP_INFO = SafejumperPlusHelper-Info.plist
+    HELPER_APP_LAUNCHD_INFO = sh.proxy.SafejumperPlusHelper.plist
     RESOURCES_INST_DIR = $$shell_quote($$OUT_PWD/application/$${APPNAME}/Contents/Resources/)
 
     # Commands to organize the bundle app

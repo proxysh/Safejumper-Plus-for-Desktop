@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleExecutable</key>
-        <string>Safejumper Plus</string>
+        <string>SafejumperPlus</string>
 	<key>CFBundleIconFile</key>
 	<string>application</string>
 	<key>CFBundleIdentifier</key>
@@ -17,7 +17,7 @@
 	<key>SMPrivilegedExecutables</key>
 	<dict>
                 <key>sh.proxy.SafejumperPlusHelper</key>
-		<string>anchor apple generic and identifier "sh.proxy.SafejumperHelper" and (certificate leaf[field.1.2.840.113635.100.6.1.9] /* exists */ or certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = "42EJ97Y7M3")</string>
+                <string>anchor apple generic and identifier "sh.proxy.SafejumperPlusHelper" and (certificate leaf[field.1.2.840.113635.100.6.1.9] /* exists */ or certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = "42EJ97Y7M3")</string>
 	</dict>
 </dict>
 </plist>
