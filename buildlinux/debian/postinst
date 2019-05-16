@@ -1,13 +1,13 @@
 #!/bin/sh
 
 # fix permissions
-chown -R root:root /opt/safejumper/netdown
-chown -R root:root /opt/safejumper/safejumperservice
-chown -R root:root /opt/safejumper/openvpn
+chown -R root:root /opt/safejumperplus/netdown
+chown -R root:root /opt/safejumperplus/safejumperplusservice
+chown -R root:root /opt/safejumperplus/openvpn
 
 if [ -x /bin/systemctl ]; then
-    systemctl enable safejumper
-    systemctl start safejumper
+    systemctl enable safejumperplus
+    systemctl start safejumperplus
 fi
 
 #DEBHELPER#

@@ -1,0 +1,10 @@
+[Unit]
+Description=safejumperplus vpn daemon
+
+[Service]
+Type=forking
+ExecStart=/opt/safejumperplus/safejumperserviceplus
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

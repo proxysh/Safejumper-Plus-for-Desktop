@@ -1,6 +1,6 @@
-safejumper (2019.01.21.0) unstable; urgency=medium
+safejumperplus (2019.03.13.0) unstable; urgency=medium
 
-  * Updated packaging to qml gui for version 5.0 build 100
+  * Updated packaging to qml gui for version 5.1 build 106
 
  -- Jeremy Whiting <info@3monkeysinternational.com>  Mon, 21 Jan 2019 21:41:00 -0600
 

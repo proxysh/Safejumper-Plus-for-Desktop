@@ -2,8 +2,8 @@
 # Run this script from the buildlinux folder to build a debian/ubuntu package
 qmake ../src
 make
-cp application/safejumper linuxfiles
-cp service/safejumperservice linuxfiles
+cp application/safejumperplus linuxfiles
+cp service/safejumperplusservice linuxfiles
 cp netdown/netdown linuxfiles
 cp openvpn64 linuxfiles/openvpn
 
