@@ -1,4 +1,4 @@
-# Safejumper for Desktop
+# Safejumper Plus for Desktop
 
 This piece of software is a custom OpenVPN client for Desktop. It has been specifically designed to work with the Proxy.sh VPN network.
 
@@ -9,7 +9,7 @@ This code is licensed to GNU-GPL. It means you can take the code and modify it a
 ## PGP Signature
 
 The latest version of Safejumper is available under various binaries whose PGP signature are: 
-https://paste.proxy.sh/?a47d316ca335209f#y7//Dihyd5Bo1pOM22WA1N+wBvjy54OorNhnA2YXiFY=
+https://paste.proxy.sh/?670606853188996d#2oKI+mJZjf7Zz+b4qINA0noqCrM2lbxE4vt1xAZZb00=
 
 ## Bounty
 
@@ -26,3 +26,4 @@ This software has been developed by the following persons or entities:
 * Three Monkeys International Inc. (consultancy, outsourcing).
 * Andrei Anufriev <andrey144@gmail.com>
 * Jeremy Whiting <jeremypwhiting@gmail.com>
+* Wojciech Knieć <wkniec@milosolutions.com>
