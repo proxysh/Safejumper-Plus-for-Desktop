@@ -7,7 +7,7 @@
 QT	   += network xml core gui widgets qml quick svg
 
 TARGET = safejumperplus
-APPNAME = SafejumperPlus
+APPNAME = "Safejumper Plus"
 TEMPLATE = app
 INCLUDEPATH += ../common
 

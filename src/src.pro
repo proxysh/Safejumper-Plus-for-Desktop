@@ -18,7 +18,7 @@ SUBDIRS += \
 
     # Bundle App name
     BUNDLEAPP = "SafejumperPlus"
-    APPNAME = "SafejumperPlus.app"
+    APPNAME = "Safejumper Plus.app"
     HELPERAPP = sh.proxy.SafejumperPlusHelper
     HELPERAPP_INFO = SafejumperPlusHelper-Info.plist
     HELPER_APP_LAUNCHD_INFO = sh.proxy.SafejumperPlusHelper.plist

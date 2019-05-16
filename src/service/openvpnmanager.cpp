@@ -598,7 +598,8 @@ void OpenvpnManager::continueConnecting()
             !mDNS2.isEmpty())
         OsSpecific::instance()->fixDnsLeak();
 
-    QString prog = ServicePathHelper::Instance()->openvpnFilename();
+    QString preprog = ServicePathHelper::Instance()->openvpnFilename();
+    QString prog = preprog.remove("\\");
     Log::serviceLog("Prog is: " + prog);
     QString params = args.join(' ');
     Log::serviceLog("Args are:" + params);
@@ -621,8 +622,8 @@ void OpenvpnManager::continueConnecting()
 
         Log::serviceLog("######  before exec ####");
 
-        int result = QProcess::execute(prog.remove("\\"), args);
-
+        //int result = QProcess::execute(prog.remove("\\"), args);
+        int result = QProcess::execute(prog, args);
         Log::serviceLog("Result of openvpn execution is " + QString::number(result));
         // Wait 1 seconds to let openvpn open the socket we connect to
         sleep(1);
@@ -1003,7 +1004,9 @@ bool OpenvpnManager::openvpnRunning()
         */
 
 #ifdef Q_OS_DARWIN
-        QString result = OsSpecific::instance()->runCommandFast(ServicePathHelper::Instance()->openvpnRunningScriptFilename());
+        QString pfncopy = ServicePathHelper::Instance()->openvpnRunningScriptFilename();
+        auto pfn2 = pfncopy.remove('\\');
+        QString result = OsSpecific::instance()->runCommandFast(pfn2);
         Log::serviceLog("Result of " + ServicePathHelper::Instance()->openvpnRunningScriptFilename() + " is " + result);
         if (result.trimmed() != "0" && !result.isEmpty()) {
             running = true;
@@ -1295,10 +1298,9 @@ void OpenvpnManager::setRights()
 {
     // Qt uses permissions in HEX while OS's in 8-based !
 
-
+Log::serviceLog("Setting rights");
     // will ask for elevated rights inside
 #ifdef Q_OS_DARWIN
-
     setChmod("0744", ServicePathHelper::Instance()->upScriptFilename());
     setChown(ServicePathHelper::Instance()->upScriptFilename());
     setChmod("0744", ServicePathHelper::Instance()->downScriptFilename());
@@ -1334,21 +1336,29 @@ void OpenvpnManager::setRights()
 
 void OpenvpnManager::setChmod(const char * sflags, const QString & pfn)
 {
-    struct stat st;		// QFileInfo fails often
-    if (0 != stat(pfn.toStdString().c_str(), &st))
-        throw std::runtime_error(("Cannot read flags on file " + pfn).toStdString());
+    QString pfncopy = pfn;
+    auto pfn2 = pfncopy.remove('\\');
+    Log::serviceLog(pfn2.toStdString().c_str());
 
+    struct stat st;		// QFileInfo fails often
+    //if (0 != stat(pfn2.toStdString().c_str(), &st)) {
+    if (stat(pfn2.toStdString().c_str(), &st) < 0) {
+
+        Log::serviceLog("Cannot read flags");
+        throw std::runtime_error(("Cannot read flags on file " + pfn).toStdString());
+    }
     bool ok;
     QString qs(sflags);
     //unsigned flags16 = qs.toInt(&ok, 16);
     //if (!ok) throw std::runtime_error((QString("Internal error: Cannot atoi ") + sflags).toStdString());
     unsigned flags8 = qs.toInt(&ok, 8);
-    if (!ok)
+    if (!ok) {
+        Log::serviceLog("Cannot atoi");
         throw std::runtime_error((QString("Internal error: Cannot atoi ") + sflags).toStdString());
-
+    }
     if ((st.st_mode & flags8) != flags8) {
         QStringList args1;
-        args1 << sflags << pfn;
+        args1 << sflags << pfn2;
         QProcess::execute("/bin/chmod", args1);				// mac, ubuntu
 
 //		QStringList a;		// HACK: -1 wait till file system changes become effective
@@ -1357,10 +1367,10 @@ void OpenvpnManager::setChmod(const char * sflags, const QString & pfn)
 //		execAsRoot("/usr/bin/touch", a);
 
         // HACK: wait till file system changes become effective
-        int r2 = stat(pfn.toStdString().c_str(), &st);
+        int r2 = stat(pfn2.toStdString().c_str(), &st);
         for (int k = 1; k < 6 && 0 == r2 && ((st.st_mode & flags8) != flags8) ; ++k) {
             QThread::msleep(k * 100);
-            r2 = stat(pfn.toStdString().c_str(), &st);
+            r2 = stat(pfn2.toStdString().c_str(), &st);
         }
     }
     return;
@@ -1382,10 +1392,14 @@ void OpenvpnManager::setChmod(const char * sflags, const QString & pfn)
 
 void OpenvpnManager::setChown(const QString & pfn)
 {
-    QFileInfo fi(pfn);
+    QString pfncopy = pfn;
+    auto pfn2 = pfncopy.remove('\\');
+    QFileInfo fi(pfn2);
     fi.refresh();
-    if (!fi.exists())
+    if (!fi.exists()) {
+        Log::serviceLog("Cannot chown. File does not exist");
         throw std::runtime_error(("Cannot chown. File does not exist " + pfn).toStdString());
+    }
     if (fi.ownerId() != 0 || fi.groupId() != 0) {
 #ifdef Q_OS_DARWIN
         {

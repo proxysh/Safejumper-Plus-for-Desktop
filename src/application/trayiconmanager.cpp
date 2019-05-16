@@ -274,16 +274,16 @@ void TrayIconManager::stateChanged(vpnState st)
     switch (st) {
     case vpnStateDisconnected:
         updateActionsEnabled(false);
-        message = tr("You are disconnected from %1 VPN.").arg(kAppName);
+        message = tr("You are disconnected from %1 VPN.").arg(kVisibleAppName);
         break;
     case vpnStateConnecting:
         updateActionsEnabled(true);
-        message = tr("You are connecting to %1 VPN.").arg(kAppName);
+        message = tr("You are connecting to %1 VPN.").arg(kVisibleAppName);
         break;
     case vpnStateConnected:
         mJumpAction->setEnabled(true);
         mSwitchCountryAction->setEnabled(true);
-        message = tr("You are connected to %1 VPN.").arg(kAppName);
+        message = tr("You are connected to %1 VPN.").arg(kVisibleAppName);
         break;
     default:
         break;
@@ -294,7 +294,7 @@ void TrayIconManager::stateChanged(vpnState st)
         return;
 
     QIcon icon = mTrayIcon->icon();
-    mTrayIcon->showMessage(kAppName, message, icon);
+    mTrayIcon->showMessage(kVisibleAppName, message, icon);
 }
 
 void TrayIconManager::connectTriggered()

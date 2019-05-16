@@ -83,7 +83,7 @@ MainWindow::MainWindow() :
 
     setFlags(Qt::Dialog);
     setIcon(QIcon(":/images/logo.png"));
-    setTitle(kAppName);
+    setTitle(kVisibleAppName);
 
     QSize windowSize(300, 604);
 

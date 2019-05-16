@@ -31,7 +31,8 @@
 
 #define kHELPER_LABEL "sh.proxy.SafejumperPlusHelper"
 
-const QString kAppName = "Safejumper Plus";
+const QString kAppName = "Safejumper\\ Plus";
+const QString kVisibleAppName = "Safejumper Plus";
 const QString kOrgName = "sh.proxy";
 const QString kLowerAppName = "safejumperplus";
 
@@ -96,8 +97,8 @@ const QStringList kLanguageTranslations = {
     "gui_zh.qm"
 #else
 #ifdef Q_OS_DARWIN
-    "/Applications/SafejumperPlus.app/Contents/Resources/gui_en.qm",
-    "/Applications/SafejumperPlus.app/Contents/Resources/gui_zh.qm"
+    "/Applications/Safejumper Plus.app/Contents/Resources/gui_en.qm",
+    "/Applications/Safejumper Plus.app/Contents/Resources/gui_zh.qm"
 #else
     "/opt/safejumperplus/gui_en.qm",
     "/opt/safejumperplus/gui_zh.qm"
@@ -132,7 +133,7 @@ enum commands {
 };
 
 #ifdef Q_OS_WIN
-static const QString kSocketName = "SafejumperPlusVPN";
+static const QString kSocketName = "SafejumperVPN";
 #else
 static const QString kSocketName = "/var/tmp/SafejumperVPN";
 #endif

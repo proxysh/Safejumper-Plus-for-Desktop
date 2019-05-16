@@ -57,7 +57,7 @@ macx: {
     DESTDIR = ../
     CONFIG -= app_bundle
     target.path = /Applications
-    resources.path = /Applications/SafejumperPlus.app/Contents/Resources
+    resources.path = /Applications/Safejumper Plus.app/Contents/Resources
     resources.files = ./resources/*
 
     include (../common/certificate.pri)
