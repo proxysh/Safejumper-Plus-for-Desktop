@@ -1,9 +1,9 @@
 !include "MUI2.nsh"
 icon "application.ico"
 Name SafejumperPlus
-OutFile SafejumperPlus_install.exe ; NsiDecompiler: generated value!
+OutFile ..\safejumperplus.exe ; NsiDecompiler: generated value!
 InstallColors 00FF00 000000
-InstallDir 'C:\Program Files\SafejumperPlus'
+InstallDir 'C:\Program Files\Safejumper Plus'
 Page directory "" "" ""
 Page instfiles "" "" ""
 Page custom ""  ""
@@ -17,7 +17,7 @@ SectionIn RO
        CreateDirectory $INSTDIR
        SetOutPath $INSTDIR
        # Stop and uninstall service in case it's running
-	   nsExec::Exec 'taskkill /f /im safejumperplus.exe'
+	   nsExec::Exec 'taskkill /f /im "Safejumper Plus.exe"'
 	   Pop $0
        nsExec::Exec '$INSTDIR\safejumperplusservice.exe -t'
        Pop $0
@@ -32,7 +32,7 @@ SectionIn RO
        File  vcredist_x86.exe
        File  ssleay32.dll
        File  application.ico
-       File  safejumperplus.exe
+       File  "Safejumper Plus.exe"
        File  safejumperplusservice.exe
        File  Qt5Core.dll
        File  Qt5Gui.dll
@@ -126,36 +126,36 @@ SectionIn RO
     # point the new shortcut at the program uninstaller
 
 	SetOutPath $INSTDIR
-    CreateShortCut  "$DESKTOP\SafejumperPlus for Windows.lnk" "$INSTDIR\safejumperplus.exe"
-    CreateDirectory "$SMPROGRAMS\SafejumperPlus"
-    CreateShortCut  "$SMPROGRAMS\SafejumperPlus\SafejumperPlus.lnk" "$INSTDIR\safejumperplus.exe"
-    CreateShortCut  "$SMPROGRAMS\SafejumperPlus\Uninstall.lnk" "$INSTDIR\uninstall.exe"
+    CreateShortCut  "$DESKTOP\Safejumper Plus.lnk" "$INSTDIR\Safejumper Plus.exe"
+    CreateDirectory "$SMPROGRAMS\Safejumper Plus"
+    CreateShortCut  "$SMPROGRAMS\Safejumper Plus\Safejumper Plus.lnk" "$INSTDIR\Safejumper Plus.exe"
+    CreateShortCut  "$SMPROGRAMS\Safejumper Plus\Uninstall.lnk" "$INSTDIR\uninstall.exe"
 
     # Add uninstaller to registry for easy uninstallation
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper Plus" \
             "DisplayName" "SafejumperPlus"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper Plus" \
             "DisplayIcon" "$INSTDIR\application.ico"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper Plus" \
             "Publisher" "Proxy.sh"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper Plus" \
             "DisplayVersion" "${VERSION} build ${BUILD}"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper Plus" \
             "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus" \
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper Plus" \
             "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
 SectionEnd
 
 # uninstaller section start
 Section "uninstall"
 
-    Delete  $DESKTOP\SafejumperPlus.lnk
-    Delete  $SMPROGRAMS\SafejumperPlus\SafejumperPlus.lnk
-    Delete  $SMPROGRAMS\SafejumperPlus\Uninstall.lnk
+    Delete  "$DESKTOP\Safejumper Plus.lnk"
+    Delete  "$SMPROGRAMS\Safejumper Plus\Safejumper Plus.lnk"
+    Delete  "$SMPROGRAMS\Safejumper Plus\Uninstall.lnk"
     ExecWait '$INSTDIR\OpenVPN\Uninstall.exe /S'  $0
     RMDir /r $INSTDIR\*.*
     RMDir $INSTDIR
-    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\SafejumperPlus"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Safejumper Plus"
 
 # uninstaller section end
 SectionEnd
